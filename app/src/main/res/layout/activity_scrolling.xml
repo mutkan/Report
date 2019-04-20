@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".ScrollingActivity">
+    tools:context=".ScrollingActivity"
+    android:id="@+id/main_view">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -29,8 +30,8 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:titleTextColor="@android:color/black"
-                app:subtitleTextColor="@android:color/black"/>
+                app:titleTextColor="@color/darkgray"
+                app:subtitleTextColor="@color/darkgray"/>
 
             <Button
                 android:id="@+id/btn_login"
@@ -38,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/login_out"
                 android:layout_gravity="end"
-                android:textColor="@android:color/black"
+                android:textColor="@color/darkgray"
                 style="?android:attr/borderlessButtonStyle" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

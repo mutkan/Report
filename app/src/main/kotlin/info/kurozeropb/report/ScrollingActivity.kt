@@ -3,21 +3,28 @@ package info.kurozeropb.report
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Point
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.android.extension.responseJson
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.result.Result
-import info.kurozeropb.report.structures.AuthResponse
-import info.kurozeropb.report.structures.ErrorResponse
-import info.kurozeropb.report.structures.User
 import kotlinx.android.synthetic.main.activity_scrolling.*
+import kotlinx.android.synthetic.main.content_scrolling.*
 import kotlinx.android.synthetic.main.login_dialog.view.*
 import org.jetbrains.anko.doAsync
+import android.widget.LinearLayout
+import android.widget.TextView
+import info.kurozeropb.report.structures.*
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
 
 const val baseUrl = "https://reportapp-api.herokuapp.com/v1"
 const val version = "0.0.1"
@@ -29,6 +36,7 @@ lateinit var token: String
 var user: User? = null
 var isLoggedin: Boolean = false
 
+@UnstableDefault
 class ScrollingActivity : AppCompatActivity() {
 
     @SuppressLint("InflateParams")
@@ -41,9 +49,8 @@ class ScrollingActivity : AppCompatActivity() {
         token = sharedPreferences.getString("token", "") ?: ""
 
         val userstr = sharedPreferences.getString("user", "") ?: ""
-        println(userstr)
         user = if (userstr.isNotEmpty())
-            User.Deserializer().deserialize(userstr)
+            Json.nonstrict.parse(User.serializer(), userstr)
         else null
 
         isLoggedin = token.isNotEmpty() && user != null
@@ -69,6 +76,7 @@ class ScrollingActivity : AppCompatActivity() {
                 sharedPreferences.edit().remove("user").apply()
                 isLoggedin = false
                 btn_login.text = getString(R.string.login_out, "Login")
+                scrollLayout.removeAllViews()
                 return@setOnClickListener
             }
 
@@ -99,23 +107,25 @@ class ScrollingActivity : AppCompatActivity() {
                                             is Result.Failure -> {
                                                 if (error != null) {
                                                     btn_login.text = getString(R.string.login_out, "Login")
-                                                    val errorResponse = ErrorResponse.Deserializer().deserialize(error.response.data)
-                                                    val message = errorResponse?.statusMessage ?: (error.message ?: "Something went wrong")
-                                                    Snackbar.make(view, message, Snackbar.LENGTH_LONG).show()
+                                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), String(error.response.data))
+                                                    Snackbar.make(view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
                                                 }
                                             }
                                             is Result.Success -> {
                                                 if (data != null) {
-                                                    val response = AuthResponse.Deserializer().deserialize(data.content)
-                                                    if (response != null) {
-                                                        val usrstr = User.Serializer().serialize(response.data.user)
-                                                        token = response.data.token
-                                                        user = response.data.user
-                                                        sharedPreferences.edit().putString("token", token).apply()
-                                                        sharedPreferences.edit().putString("user", usrstr).apply()
-                                                        isLoggedin = true
-                                                        btn_login.text = getString(R.string.login_out, "Logout")
-                                                    }
+                                                    val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
+                                                    token = response.data.token
+                                                    user = response.data.user
+
+                                                    val usr = Json.nonstrict.stringify(User.serializer(), response.data.user)
+                                                    val reports = Json.nonstrict.stringify(Report.serializer().list, response.data.user.reports)
+                                                    sharedPreferences.edit().putString("token", token).apply()
+                                                    sharedPreferences.edit().putString("user", usr).apply()
+                                                    sharedPreferences.edit().putString("reports", reports).apply()
+
+                                                    isLoggedin = true
+                                                    btn_login.text = getString(R.string.login_out, "Logout")
+                                                    loadReports(user?.reports)
                                                 }
                                             }
                                         }
@@ -123,6 +133,89 @@ class ScrollingActivity : AppCompatActivity() {
                         }
                     }
             loginDialog.show()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        // Load reports if user is still logged in
+        if (isLoggedin) {
+            updateReports()
+            loadReports(user?.reports)
+        }
+    }
+
+    private fun updateReports() {
+        if (isLoggedin.not()) {
+            return
+        }
+
+        doAsync {
+            Fuel.get("/reports/all")
+                    .header(mapOf("Content-Type" to "application/json"))
+                    .header(mapOf("Authorization" to "Bearer $token"))
+                    .responseJson { _, _, result ->
+                        val (data, error) = result
+                        when (result) {
+                            is Result.Failure -> {
+                                if (error != null) {
+                                    btn_login.text = getString(R.string.login_out, "Login")
+                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), String(error.response.data))
+                                    Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                }
+                            }
+                            is Result.Success -> {
+                                if (data != null) {
+                                    val response = Json.nonstrict.parse(ReportsResponse.serializer(), data.content)
+                                    val reports = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
+                                    println(reports)
+                                    sharedPreferences.edit().putString("reports", reports).apply()
+                                    loadReports(response.data.reports)
+                                }
+                            }
+                        }
+                    }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun loadReports(reports: List<Report>?) {
+        if (reports != null) {
+            scrollLayout.removeAllViews()
+
+            val display = windowManager.defaultDisplay
+            val size = Point()
+            display.getSize(size)
+            val width = size.x
+
+            for (report in reports) {
+                // Create new cardview and add to scrolllayout
+                val cardView = CardView(ContextThemeWrapper(this, R.style.CardViewStyle), null, 0)
+                val cardInner = LinearLayout(ContextThemeWrapper(this, R.style.Widget_CardContent))
+                cardView.addView(cardInner)
+                scrollLayout.addView(cardView)
+                scrollLayout.setPadding(0, 50, 0, 0)
+
+                // cardview loses margins and style when inflated so re-add those here
+                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                params.setMargins(0, 50, 0, 50)
+                cardView.layoutParams = params
+                cardView.layoutParams.height = 500
+                cardView.layoutParams.width = width - 150
+                cardView.setContentPadding(5, 5, 5, 5)
+                cardView.useCompatPadding = true
+
+                val tvTitle = TextView(this)
+                tvTitle.textSize = 24f
+                tvTitle.text = "Title"
+
+                val tvNote = TextView(this)
+                tvNote.text = report.note
+
+                cardInner.addView(tvTitle)
+                cardInner.addView(tvNote)
+            }
         }
     }
 }
