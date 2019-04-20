@@ -22,6 +22,7 @@ import org.jetbrains.anko.doAsync
 import android.widget.LinearLayout
 import android.widget.TextView
 import info.kurozeropb.report.structures.*
+import info.kurozeropb.report.utils.Utils
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
@@ -34,6 +35,7 @@ lateinit var sharedPreferences: SharedPreferences
 lateinit var token: String
 
 var user: User? = null
+var reports: List<Report>? = null
 var isLoggedin: Boolean = false
 
 @UnstableDefault
@@ -51,6 +53,11 @@ class ScrollingActivity : AppCompatActivity() {
         val userstr = sharedPreferences.getString("user", "") ?: ""
         user = if (userstr.isNotEmpty())
             Json.nonstrict.parse(User.serializer(), userstr)
+        else null
+
+        val rstr = sharedPreferences.getString("reports", "") ?: ""
+        reports = if (rstr.isNotEmpty())
+            Json.nonstrict.parse(Report.serializer().list, rstr)
         else null
 
         isLoggedin = token.isNotEmpty() && user != null
@@ -107,8 +114,13 @@ class ScrollingActivity : AppCompatActivity() {
                                             is Result.Failure -> {
                                                 if (error != null) {
                                                     btn_login.text = getString(R.string.login_out, "Login")
-                                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), String(error.response.data))
-                                                    Snackbar.make(view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                                    val json = String(error.response.data)
+                                                    if (Utils.isJSON(json)) {
+                                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                                                        Snackbar.make(view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                                    } else {
+                                                        Snackbar.make(view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                                    }
                                                 }
                                             }
                                             is Result.Success -> {
@@ -116,16 +128,17 @@ class ScrollingActivity : AppCompatActivity() {
                                                     val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
                                                     token = response.data.token
                                                     user = response.data.user
+                                                    reports = response.data.user.reports
 
-                                                    val usr = Json.nonstrict.stringify(User.serializer(), response.data.user)
-                                                    val reports = Json.nonstrict.stringify(Report.serializer().list, response.data.user.reports)
+                                                    val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
+                                                    val restr = Json.nonstrict.stringify(Report.serializer().list, response.data.user.reports)
                                                     sharedPreferences.edit().putString("token", token).apply()
-                                                    sharedPreferences.edit().putString("user", usr).apply()
-                                                    sharedPreferences.edit().putString("reports", reports).apply()
+                                                    sharedPreferences.edit().putString("user", ustr).apply()
+                                                    sharedPreferences.edit().putString("reports", restr).apply()
 
                                                     isLoggedin = true
                                                     btn_login.text = getString(R.string.login_out, "Logout")
-                                                    loadReports(user?.reports)
+                                                    loadReports(reports)
                                                 }
                                             }
                                         }
@@ -142,7 +155,7 @@ class ScrollingActivity : AppCompatActivity() {
         // Load reports if user is still logged in
         if (isLoggedin) {
             updateReports()
-            loadReports(user?.reports)
+            loadReports(reports)
         }
     }
 
@@ -152,7 +165,7 @@ class ScrollingActivity : AppCompatActivity() {
         }
 
         doAsync {
-            Fuel.get("/reports/all")
+            Fuel.get("/report/all")
                     .header(mapOf("Content-Type" to "application/json"))
                     .header(mapOf("Authorization" to "Bearer $token"))
                     .responseJson { _, _, result ->
@@ -160,17 +173,21 @@ class ScrollingActivity : AppCompatActivity() {
                         when (result) {
                             is Result.Failure -> {
                                 if (error != null) {
-                                    btn_login.text = getString(R.string.login_out, "Login")
-                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), String(error.response.data))
-                                    Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                    val json = String(error.response.data)
+                                    if (Utils.isJSON(json)) {
+                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                                        Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                    } else {
+                                        Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                    }
                                 }
                             }
                             is Result.Success -> {
                                 if (data != null) {
                                     val response = Json.nonstrict.parse(ReportsResponse.serializer(), data.content)
-                                    val reports = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
-                                    println(reports)
-                                    sharedPreferences.edit().putString("reports", reports).apply()
+                                    reports = response.data.reports
+                                    val rstr = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
+                                    sharedPreferences.edit().putString("reports", rstr).apply()
                                     loadReports(response.data.reports)
                                 }
                             }
