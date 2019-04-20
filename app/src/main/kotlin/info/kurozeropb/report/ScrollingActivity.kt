@@ -27,7 +27,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 
 const val baseUrl = "https://reportapp-api.herokuapp.com/v1"
-const val version = "0.0.1"
+const val version = "0.0.2"
 const val userAgent = "Report/v$version (https://github.com/reportapp/report)"
 
 lateinit var sharedPreferences: SharedPreferences
