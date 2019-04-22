@@ -147,6 +147,12 @@ class ScrollingActivity : AppCompatActivity() {
                     }
             loginDialog.show()
         }
+
+        swipeContainer.setOnRefreshListener {
+            updateReports()
+        }
+
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
     }
 
     override fun onStart() {
@@ -155,7 +161,6 @@ class ScrollingActivity : AppCompatActivity() {
         // Load reports if user is still logged in
         if (isLoggedin) {
             updateReports()
-            loadReports(reports)
         }
     }
 
@@ -163,6 +168,8 @@ class ScrollingActivity : AppCompatActivity() {
         if (isLoggedin.not()) {
             return
         }
+
+        scrollLayout.removeAllViews()
 
         doAsync {
             Fuel.get("/report/all")
@@ -181,6 +188,7 @@ class ScrollingActivity : AppCompatActivity() {
                                         Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                                     }
                                 }
+                                swipeContainer.isRefreshing = false
                             }
                             is Result.Success -> {
                                 if (data != null) {
@@ -190,6 +198,7 @@ class ScrollingActivity : AppCompatActivity() {
                                     sharedPreferences.edit().putString("reports", rstr).apply()
                                     loadReports(response.data.reports)
                                 }
+                                swipeContainer.isRefreshing = false
                             }
                         }
                     }
