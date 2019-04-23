@@ -30,8 +30,8 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:titleTextColor="@color/darkgray"
-                app:subtitleTextColor="@color/darkgray"/>
+                app:titleTextColor="@android:color/white"
+                app:subtitleTextColor="@android:color/white"/>
 
             <Button
                 android:id="@+id/btn_login"
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/login_out"
                 android:layout_gravity="end"
-                android:textColor="@color/darkgray"
+                android:textColor="@android:color/white"
                 style="?android:attr/borderlessButtonStyle" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -55,7 +55,7 @@
         android:scaleType="center"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_plus"
+        app:srcCompat="@drawable/plus"
         app:fabSize="normal" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

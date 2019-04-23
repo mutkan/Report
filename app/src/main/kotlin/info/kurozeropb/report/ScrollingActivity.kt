@@ -2,6 +2,7 @@ package info.kurozeropb.report
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Point
 import android.os.Bundle
@@ -72,7 +73,13 @@ class ScrollingActivity : AppCompatActivity() {
                     getString(R.string.login_out, "Login")
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).show()
+            if (isLoggedin.not()) {
+                Snackbar.make(view, "Login before creating a report", Snackbar.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val intent = Intent(this, CreateReportActivity::class.java)
+            startActivity(intent)
         }
 
         btn_login.setOnClickListener { view ->
