@@ -204,12 +204,8 @@ class ScrollingActivity : AppCompatActivity() {
     }
 
     private fun registerUser(userInfo: String) {
-        if (isLoggedin.not()) {
-            return
-        }
-
         doAsync {
-            Fuel.get("/auth/register")
+            Fuel.post("/auth/register")
                     .header(mapOf("Content-Type" to "application/json"))
                     .body(userInfo)
                     .responseJson { _, _, result ->
