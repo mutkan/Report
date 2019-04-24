@@ -25,8 +25,4 @@ data class ReportsResponse(
         override val statusCode: Int,
         override val statusMessage: String,
         val data: ReportsData
-) : BaseResponse // {
-//    class Deserializer : ResponseDeserializable<ReportsResponse> {
-//        override fun deserialize(content: String): ReportsResponse? = Gson().fromJson(content, ReportsResponse::class.java)
-//    }
-//}
+) : BaseResponse

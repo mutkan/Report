@@ -10,6 +10,18 @@ interface BaseResponse {
 }
 
 @Serializable
+data class BasicResponseData(
+        val message: String
+)
+
+@Serializable
+data class BasicResponse(
+        override val statusCode: Int,
+        override val statusMessage: String,
+        val data: BasicResponseData
+) : BaseResponse
+
+@Serializable
 data class ErrorData(
         val message: String
 )
@@ -19,8 +31,4 @@ data class ErrorResponse(
         override val statusCode: Int,
         override val statusMessage: String,
         val data: ErrorData
-) : BaseResponse //{
-//    class Deserializer : ResponseDeserializable<ErrorResponse> {
-//        override fun deserialize(content: String): ErrorResponse? = Gson().fromJson(content, ErrorResponse::class.java)
-//    }
-//}
+) : BaseResponse
