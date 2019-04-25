@@ -23,6 +23,14 @@
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal">
 
+            <ProgressBar
+                android:id="@+id/pb_reports"
+                android:visibility="gone"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

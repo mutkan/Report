@@ -8,7 +8,7 @@ import kotlinx.serialization.UnstableDefault
 
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
-    private val SPLASH_TIME_OUT: Long = 3000 // 3 sec
+    private val SPLASH_TIME_OUT: Long = 5000 // 5 sec
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)

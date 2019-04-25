@@ -31,6 +31,9 @@
         <activity
             android:name=".CreateReportActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ShowReportActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

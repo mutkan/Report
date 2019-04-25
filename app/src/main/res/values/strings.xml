@@ -5,4 +5,8 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="report_back">back</string>
+    <string name="report_title">Created on %1$s</string>
+    <string name="tv_created_text">%1$s</string>
+    <string name="tv_note_text">%1$s</string>
+    <string name="tv_show_note">%1$s</string>
 </resources>
