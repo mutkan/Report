@@ -28,9 +28,12 @@ import kotlinx.android.synthetic.main.register_dialog.view.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
+import org.jetbrains.anko.doAsyncResult
+import java.util.concurrent.Future
+import java.util.concurrent.FutureTask
 
 const val baseUrl = "https://reportapp-api.herokuapp.com/v1"
-const val version = "0.0.2"
+const val version = "0.0.3"
 const val userAgent = "Report/v$version (https://github.com/reportapp/report)"
 
 lateinit var sharedPreferences: SharedPreferences
@@ -83,7 +86,7 @@ class ScrollingActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        btn_login.setOnClickListener { view ->
+        btn_login.setOnClickListener {
             if (btn_login.text == "Logout") {
                 token = ""
                 user = null
@@ -101,55 +104,48 @@ class ScrollingActivity : AppCompatActivity() {
             val loginDialog = AlertDialog.Builder(this)
                     .setView(loginView)
                     .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-                    .setNeutralButton("Register") { dialog, _ ->
-                        dialog.dismiss()
+                    .setNeutralButton("Register") { _, _ -> }
+                    .setPositiveButton("Login") { _, _ -> }.create()
+            loginDialog.show()
 
-                        val registerFactory = LayoutInflater.from(this)
-                        val registerView = registerFactory.inflate(R.layout.register_dialog, null)
-                        val registerDialog = AlertDialog.Builder(this)
-                                .setView(registerView)
-                                .setNegativeButton("Cancel") { d, _ -> d.cancel() }
-                                .setPositiveButton("Confirm") { _, _ ->  }.create()
-                        registerDialog.show()
-                        registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            // Input checks
-                            if (registerView.firstInput.text.isNullOrEmpty()
-                                    || registerView.lastInput.text.isNullOrEmpty()
-                                    || registerView.userInput.text.isNullOrEmpty()
-                                    || registerView.passInput.text.isNullOrEmpty()
-                                    || registerView.cPassInput.text.isNullOrEmpty()
-                                    || registerView.emailInput.text.isNullOrEmpty()
-                            ) {
-                                Snackbar.make(registerView, "Please complete all fields", Snackbar.LENGTH_LONG).show()
-                            } else if (registerView.passInput.text.length < 4) {
-                                Snackbar.make(registerView, "Password needs to be atleast 4 characters long", Snackbar.LENGTH_LONG).show()
-                            } else if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
-                                Snackbar.make(registerView, "Passwords do not match", Snackbar.LENGTH_LONG).show()
-                            } else {
-                                val reqbody = """
-                                    {
-                                        "firstName": "${registerView.firstInput.text}",
-                                        "lastName": "${registerView.lastInput.text}",
-                                        "username": "${registerView.userInput.text}",
-                                        "password": "${registerView.passInput.text}",
-                                        "email": "${registerView.emailInput.text}"
-                                    }
-                                """.trimMargin()
+            // Login dialog neutral button
+            loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                val registerFactory = LayoutInflater.from(this)
+                val registerView = registerFactory.inflate(R.layout.register_dialog, null)
+                val registerDialog = AlertDialog.Builder(this)
+                        .setView(registerView)
+                        .setNegativeButton("Cancel") { d, _ -> d.cancel() }
+                        .setPositiveButton("Confirm") { _, _ ->  }.create()
+                registerDialog.show()
 
-                                registerUser(reqbody)
-                                registerDialog.dismiss()
-                            }
+                // Register dialog neutral button
+                registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    // Input checks
+                    if (it.firstInput.text.isNullOrEmpty()
+                            || it.lastInput.text.isNullOrEmpty()
+                            || it.userInput.text.isNullOrEmpty()
+                            || it.passInput.text.isNullOrEmpty()
+                            || it.cPassInput.text.isNullOrEmpty()
+                            || it.emailInput.text.isNullOrEmpty()
+                    ) {
+                        Snackbar.make(it, "Please complete all fields", Snackbar.LENGTH_LONG).show()
+                    } else if (it.passInput.text.length < 4) {
+                        Snackbar.make(it, "Password needs to be atleast 4 characters long", Snackbar.LENGTH_LONG).show()
+                    } else if (it.passInput.text.toString() != it.cPassInput.text.toString()) {
+                        Snackbar.make(it, "Passwords do not match", Snackbar.LENGTH_LONG).show()
+                    } else {
+                        val reqbody = """
+                        {
+                            "firstName": "${it.firstInput.text}",
+                            "lastName": "${it.lastInput.text}",
+                            "username": "${it.userInput.text}",
+                            "password": "${it.passInput.text}",
+                            "email": "${it.emailInput.text}"
                         }
-                    }
-                    .setPositiveButton("Login") { _, _ ->
-                        if (loginView.usernameInput.text.isNullOrEmpty() || loginView.passwordInput.text.isNullOrEmpty()) {
-                            Snackbar.make(view, "Please complete all fields", Snackbar.LENGTH_LONG).show()
-                            return@setPositiveButton
-                        }
+                        """.trimMargin()
 
                         doAsync {
-                            val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
-                            Fuel.post("/auth/login")
+                            Fuel.post("/auth/register")
                                     .header(mapOf("Content-Type" to "application/json"))
                                     .body(reqbody)
                                     .responseJson { _, _, result ->
@@ -157,34 +153,75 @@ class ScrollingActivity : AppCompatActivity() {
                                         when (result) {
                                             is Result.Failure -> {
                                                 if (error != null) {
-                                                    btn_login.text = getString(R.string.login_out, "Login")
                                                     val json = String(error.response.data)
                                                     if (Utils.isJSON(json)) {
                                                         val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                                        Snackbar.make(view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                                        Snackbar.make(it, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
                                                     } else {
-                                                        Snackbar.make(view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                                        Snackbar.make(it, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                                                     }
                                                 }
                                             }
                                             is Result.Success -> {
                                                 if (data != null) {
-                                                    val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
-                                                    token = response.data.token
-                                                    sharedPreferences.edit().putString("token", token).apply()
-
-                                                    isLoggedin = true
-                                                    btn_login.text = getString(R.string.login_out, "Logout")
-
-                                                    fetchReports()
-                                                    fetchUserInfo()
+                                                    val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
+                                                    Snackbar.make(loginView, response.data.message, Snackbar.LENGTH_LONG).show()
+                                                    registerDialog.dismiss()
                                                 }
                                             }
                                         }
                                     }
                         }
-                    }.create()
-            loginDialog.show()
+                    }
+                }
+            }
+
+            // Login dialog positive button
+            loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                if (loginView.usernameInput.text.isNullOrEmpty() || loginView.passwordInput.text.isNullOrEmpty()) {
+                    Snackbar.make(it, "Please complete all fields", Snackbar.LENGTH_LONG).show()
+                } else {
+                    doAsync {
+                        val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
+                        Fuel.post("/auth/login")
+                                .header(mapOf("Content-Type" to "application/json"))
+                                .body(reqbody)
+                                .responseJson { _, _, result ->
+                                    val (data, error) = result
+                                    when (result) {
+                                        is Result.Failure -> {
+                                            if (error != null) {
+                                                btn_login.text = getString(R.string.login_out, "Login")
+                                                val json = String(error.response.data)
+                                                if (Utils.isJSON(json)) {
+                                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                                                    Snackbar.make(it, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                                } else {
+                                                    Snackbar.make(it, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                                }
+                                            }
+                                        }
+                                        is Result.Success -> {
+                                            if (data != null) {
+                                                val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
+                                                token = response.data.token
+                                                sharedPreferences.edit().putString("token", token).apply()
+
+                                                isLoggedin = true
+                                                btn_login.text = getString(R.string.login_out, "Logout")
+
+                                                fetchReports()
+                                                val user = fetchUserInfo().get()
+                                                loginDialog.dismiss()
+                                                val fullName = if (user != null) "${user.firstName} ${user.lastName}" else ""
+                                                Snackbar.make(main_view, "Welcome $fullName", Snackbar.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    }
+                                }
+                    }
+                }
+            }
         }
 
         swipeContainer.setOnRefreshListener {
@@ -203,69 +240,47 @@ class ScrollingActivity : AppCompatActivity() {
         }
     }
 
-    private fun registerUser(userInfo: String) {
-        doAsync {
-            Fuel.post("/auth/register")
-                    .header(mapOf("Content-Type" to "application/json"))
-                    .body(userInfo)
-                    .responseJson { _, _, result ->
-                        val (data, error) = result
-                        when (result) {
-                            is Result.Failure -> {
-                                if (error != null) {
-                                    val json = String(error.response.data)
-                                    if (Utils.isJSON(json)) {
-                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                        Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
-                                    } else {
-                                        Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
-                                    }
-                                }
-                            }
-                            is Result.Success -> {
-                                if (data != null) {
-                                    val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
-                                    Snackbar.make(main_view, response.data.message, Snackbar.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                    }
-        }
-    }
+//    fun test() = async(UI) {
+//
+//    }
 
-    private fun fetchUserInfo() {
+    private fun fetchUserInfo(): Future<User?> {
         if (isLoggedin.not()) {
-            return
+            return FutureTask(null)
         }
 
-        doAsync {
-            Fuel.get("/user/@me")
+        return doAsyncResult {
+            val (_, _, result) = Fuel.get("/user/@me")
                     .header(mapOf("Content-Type" to "application/json"))
                     .header(mapOf("Authorization" to "Bearer $token"))
-                    .responseJson { _, _, result ->
-                        val (data, error) = result
-                        when (result) {
-                            is Result.Failure -> {
-                                if (error != null) {
-                                    val json = String(error.response.data)
-                                    if (Utils.isJSON(json)) {
-                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                        Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
-                                    } else {
-                                        Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
-                                    }
-                                }
-                            }
-                            is Result.Success -> {
-                                if (data != null) {
-                                    val response = Json.nonstrict.parse(UserResponse.serializer(), data.content)
-                                    user = response.data.user
-                                    val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
-                                    sharedPreferences.edit().putString("user", ustr).apply()
-                                }
-                            }
+                    .responseJson()
+
+            val (data, error) = result
+            when (result) {
+                is Result.Failure -> {
+                    if (error != null) {
+                        val json = String(error.response.data)
+                        if (Utils.isJSON(json)) {
+                            val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                            Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                        } else {
+                            Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                         }
                     }
+                    return@doAsyncResult null
+                }
+                is Result.Success -> {
+                    if (data != null) {
+                        val response = Json.nonstrict.parse(UserResponse.serializer(), data.content)
+                        user = response.data.user
+                        val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
+                        sharedPreferences.edit().putString("user", ustr).apply()
+                        return@doAsyncResult user
+                    } else {
+                        return@doAsyncResult null
+                    }
+                }
+            }
         }
     }
 
