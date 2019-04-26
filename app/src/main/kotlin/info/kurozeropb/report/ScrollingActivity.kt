@@ -32,11 +32,6 @@ import org.jetbrains.anko.doAsyncResult
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 
-
-const val baseUrl = "https://reportapp-api.herokuapp.com/v1"
-const val version = "0.0.4"
-const val userAgent = "Report/v$version (https://github.com/reportapp/report)"
-
 lateinit var sharedPreferences: SharedPreferences
 lateinit var token: String
 
@@ -68,8 +63,8 @@ class ScrollingActivity : AppCompatActivity() {
 
         isLoggedin = token.isNotEmpty() && user != null
 
-        FuelManager.instance.basePath = baseUrl
-        FuelManager.instance.baseHeaders = mapOf("User-Agent" to userAgent)
+        FuelManager.instance.basePath = Api.baseUrl
+        FuelManager.instance.baseHeaders = mapOf("User-Agent" to Api.userAgent)
 
         btn_login.text =
                 if (isLoggedin)
