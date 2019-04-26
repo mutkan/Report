@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.login_dialog.view.*
 import org.jetbrains.anko.doAsync
 import android.widget.LinearLayout
 import info.kurozeropb.report.structures.*
+import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.Utils
 import kotlinx.android.synthetic.main.login_dialog.*
 import kotlinx.android.synthetic.main.register_dialog.view.*
