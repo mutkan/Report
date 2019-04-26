@@ -186,7 +186,7 @@ class ScrollingActivity : AppCompatActivity() {
                                 }
 
                                 if (error != null) {
-                                    btn_login.text = getString(R.string.login_out, "Login")
+                                    withContext(Dispatchers.Main) { btn_login.text = getString(R.string.login_out, "Login") }
                                     val json = String(error.response.data)
                                     if (Utils.isJSON(json)) {
                                         val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
