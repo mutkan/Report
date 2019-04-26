@@ -25,14 +25,11 @@ import kotlinx.android.synthetic.main.login_dialog.*
 import kotlinx.android.synthetic.main.login_dialog.view.*
 import kotlinx.android.synthetic.main.register_dialog.view.*
 import kotlinx.android.synthetic.main.report_card.view.*
+import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.doAsyncResult
-import org.jetbrains.anko.uiThread
-import java.util.concurrent.Future
-import java.util.concurrent.FutureTask
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 lateinit var sharedPreferences: SharedPreferences
 lateinit var token: String
@@ -112,32 +109,26 @@ class ScrollingActivity : AppCompatActivity() {
                 registerDialog.show()
 
                 // Register dialog neutral button
-                registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
                     // Input checks
-                    if (it.firstInput.text.isNullOrEmpty()
-                            || it.lastInput.text.isNullOrEmpty()
-                            || it.userInput.text.isNullOrEmpty()
-                            || it.passInput.text.isNullOrEmpty()
-                            || it.cPassInput.text.isNullOrEmpty()
-                            || it.emailInput.text.isNullOrEmpty()
-                    ) {
-                        Snackbar.make(it, "Please complete all fields", Snackbar.LENGTH_LONG).show()
-                    } else if (it.passInput.text.length < 4) {
-                        Snackbar.make(it, "Password needs to be atleast 4 characters long", Snackbar.LENGTH_LONG).show()
-                    } else if (it.passInput.text.toString() != it.cPassInput.text.toString()) {
-                        Snackbar.make(it, "Passwords do not match", Snackbar.LENGTH_LONG).show()
+                    if (registerView.firstInput.text.isNullOrEmpty() || registerView.lastInput.text.isNullOrEmpty() || registerView.userInput.text.isNullOrEmpty() || registerView.passInput.text.isNullOrEmpty() || registerView.cPassInput.text.isNullOrEmpty() || registerView.emailInput.text.isNullOrEmpty()) {
+                        Snackbar.make(registerView, "Please complete all fields", Snackbar.LENGTH_LONG).show()
+                    } else if (registerView.passInput.text.length < 4) {
+                        Snackbar.make(registerView, "Password needs to be atleast 4 characters long", Snackbar.LENGTH_LONG).show()
+                    } else if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
+                        Snackbar.make(registerView, "Passwords do not match", Snackbar.LENGTH_LONG).show()
                     } else {
                         val reqbody = """
                             {
-                                "firstName": "${it.firstInput.text}",
-                                "lastName": "${it.lastInput.text}",
-                                "username": "${it.userInput.text}",
-                                "password": "${it.passInput.text}",
-                                "email": "${it.emailInput.text}"
+                                "firstName": "${registerView.firstInput.text}",
+                                "lastName": "${registerView.lastInput.text}",
+                                "username": "${registerView.userInput.text}",
+                                "password": "${registerView.passInput.text}",
+                                "email": "${registerView.emailInput.text}"
                             }
                         """.trimMargin()
 
-                        doAsync {
+                        launch(Dispatchers.IO) {
                             val (_, _, result) = Fuel.post("/auth/register")
                                     .header(mapOf("Content-Type" to "application/json"))
                                     .body(reqbody)
@@ -150,17 +141,17 @@ class ScrollingActivity : AppCompatActivity() {
                                         val json = String(error.response.data)
                                         if (Utils.isJSON(json)) {
                                             val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                            Snackbar.make(it, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                            Snackbar.make(registerView, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
                                         } else {
-                                            Snackbar.make(it, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                            Snackbar.make(registerView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                                         }
                                     }
                                 }
                                 is Result.Success -> {
                                     if (data != null) {
                                         val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
+                                        withContext(Dispatchers.Main) { registerDialog.dismiss() }
                                         Snackbar.make(loginView, response.data.message, Snackbar.LENGTH_LONG).show()
-                                        uiThread { registerDialog.dismiss() }
                                     }
                                 }
                             }
@@ -170,15 +161,15 @@ class ScrollingActivity : AppCompatActivity() {
             }
 
             // Login dialog positive button
-            loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
                 if (loginView.usernameInput.text.isNullOrEmpty() || loginView.passwordInput.text.isNullOrEmpty()) {
-                    Snackbar.make(it, "Please complete all fields", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(loginView, "Please complete all fields", Snackbar.LENGTH_LONG).show()
                 } else {
                     loginDialog.pb_login.visibility = View.VISIBLE
                     loginDialog.usernameInput.visibility = View.INVISIBLE
                     loginDialog.passwordInput.visibility = View.INVISIBLE
 
-                    doAsync {
+                    launch(Dispatchers.IO) {
                         val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
                         val (_, _, result) = Fuel.post("/auth/login")
                                 .header(mapOf("Content-Type" to "application/json"))
@@ -188,20 +179,20 @@ class ScrollingActivity : AppCompatActivity() {
                         val (data, error) = result
                         when (result) {
                             is Result.Failure -> {
-                                uiThread {
+                                withContext(Dispatchers.Main) {
                                     loginDialog.pb_login.visibility = View.GONE
                                     loginDialog.usernameInput.visibility = View.VISIBLE
                                     loginDialog.passwordInput.visibility = View.VISIBLE
                                 }
 
                                 if (error != null) {
-                                    uiThread { btn_login.text = getString(R.string.login_out, "Login") }
+                                    btn_login.text = getString(R.string.login_out, "Login")
                                     val json = String(error.response.data)
                                     if (Utils.isJSON(json)) {
                                         val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                        Snackbar.make(it, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                                        Snackbar.make(loginView, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
                                     } else {
-                                        Snackbar.make(it, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                                        Snackbar.make(loginView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                                     }
                                 }
                             }
@@ -213,10 +204,10 @@ class ScrollingActivity : AppCompatActivity() {
 
                                     Api.isLoggedin = true
 
-                                    val reports = fetchReportsAsync().get()
-                                    val user = fetchUserInfoAsync().get()
+                                    val reports = fetchReportsAsync().await()
+                                    val user = fetchUserInfoAsync().await()
 
-                                    uiThread {
+                                    withContext(Dispatchers.Main) {
                                         btn_login.text = getString(R.string.login_out, "Logout")
                                         loadReports(reports)
                                         loginDialog.dismiss()
@@ -233,12 +224,18 @@ class ScrollingActivity : AppCompatActivity() {
         }
 
         swipeContainer.setOnRefreshListener {
-            if (Api.isLoggedin) {
-                val reports = fetchReportsAsync().get()
-                loadReports(reports)
-            }
+            GlobalScope.launch(Dispatchers.Main) {
+                if (Api.isLoggedin) {
+                    val reports = fetchReportsAsync().await()
 
-            swipeContainer.isRefreshing = false
+                    val loaded = loadReports(reports)
+                    if (loaded) {
+                        swipeContainer.isRefreshing = false
+                    }
+                } else {
+                    swipeContainer.isRefreshing = false
+                }
+            }
         }
 
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
@@ -248,24 +245,29 @@ class ScrollingActivity : AppCompatActivity() {
         super.onStart()
 
         // Load reports if user is still logged in
-        if (Api.isLoggedin && pb_reports != null) {
-            pb_reports.visibility = View.VISIBLE
-            val reports = fetchReportsAsync().get()
-            val loaded = loadReports(reports)
+        GlobalScope.launch(Dispatchers.Main) {
+            if (Api.isLoggedin && pb_reports != null) {
+                pb_reports.visibility = View.VISIBLE
+                val reports = fetchReportsAsync().await()
 
-            if (loaded) {
-                pb_reports.visibility = View.GONE
-                println("Loaded reports")
+                val loaded = loadReports(reports)
+                if (loaded) {
+                    pb_reports.visibility = View.GONE
+                }
             }
         }
     }
 
-    private fun fetchUserInfoAsync(): Future<User?> {
+    /**
+     * Request info about the currently logged in user
+     * @return Deferred user, await in coroutine scope
+     */
+    private fun fetchUserInfoAsync(): Deferred<User?> {
         if (Api.isLoggedin.not()) {
-            return FutureTask(null)
+            return CompletableDeferred(null)
         }
 
-        return doAsyncResult {
+        return GlobalScope.async {
             val (_, _, result) = Fuel.get("/user/@me")
                     .header(mapOf("Content-Type" to "application/json"))
                     .header(mapOf("Authorization" to "Bearer $token"))
@@ -283,29 +285,36 @@ class ScrollingActivity : AppCompatActivity() {
                             Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                         }
                     }
-                    return@doAsyncResult null
+
+                    return@async null
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(UserResponse.serializer(), data.content)
                         Api.user = response.data.user
+
                         val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
                         sharedPreferences.edit().putString("user", ustr).apply()
-                        return@doAsyncResult Api.user
+
+                        return@async Api.user
                     }
 
-                    return@doAsyncResult null
+                    return@async null
                 }
             }
         }
     }
 
-    private fun fetchReportsAsync(): Future<List<Report>?> {
+    /**
+     * Request all reports from the api for the currently logged in user
+     * @return Deferred list of reports, await in coroutine scope
+     */
+    private fun fetchReportsAsync(): Deferred<List<Report>?> {
         if (Api.isLoggedin.not()) {
-            return FutureTask(null)
+            return CompletableDeferred(null)
         }
 
-        return doAsyncResult {
+        return GlobalScope.async {
             val (_, _, result) = Fuel.get("/report/all")
                     .header(mapOf("Content-Type" to "application/json"))
                     .header(mapOf("Authorization" to "Bearer $token"))
@@ -323,17 +332,21 @@ class ScrollingActivity : AppCompatActivity() {
                             Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
                         }
                     }
-                    return@doAsyncResult null
+
+                    return@async null
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(ReportsResponse.serializer(), data.content)
                         Api.reports = response.data.reports
+
                         val rstr = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
                         sharedPreferences.edit().putString("reports", rstr).apply()
-                        return@doAsyncResult Api.reports
+
+                        return@async Api.reports
                     }
-                    return@doAsyncResult null
+
+                    return@async null
                 }
             }
         }
