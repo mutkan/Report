@@ -2,9 +2,6 @@ package info.kurozeropb.report.structures
 
 import kotlinx.serialization.Serializable
 
-//import com.github.kittinunf.fuel.core.ResponseDeserializable
-//import com.google.gson.Gson
-
 @Serializable
 data class Report(
         val rid: Int,
