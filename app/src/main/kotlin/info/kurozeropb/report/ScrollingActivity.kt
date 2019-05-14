@@ -114,36 +114,28 @@ class ScrollingActivity : AppCompatActivity() {
                     val validEmail = registerView.emailInput.validator()
                         .validEmail()
                         .nonEmpty()
-                        .addErrorCallback {
-                            registerView.emailInput.error = it
-                        }.addSuccessCallback {
-                            registerView.emailInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.emailInput.error = it }
+                        .addSuccessCallback { registerView.emailInput.error = null }
+                        .check()
 
                     val validFirstname = registerView.firstInput.validator()
                         .nonEmpty()
-                        .addErrorCallback {
-                            registerView.firstInput.error = it
-                        }.addSuccessCallback {
-                            registerView.firstInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.firstInput.error = it }
+                        .addSuccessCallback { registerView.firstInput.error = null }
+                        .check()
 
                     val validLastname = registerView.lastInput.validator()
                         .nonEmpty()
-                        .addErrorCallback {
-                            registerView.lastInput.error = it
-                        }.addSuccessCallback {
-                            registerView.lastInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.lastInput.error = it }
+                        .addSuccessCallback { registerView.lastInput.error = null }
+                        .check()
 
                     val validUsername = registerView.userInput.validator()
                         .nonEmpty()
                         .minLength(4)
-                        .addErrorCallback {
-                            registerView.userInput.error = it
-                        }.addSuccessCallback {
-                            registerView.userInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.userInput.error = it }
+                        .addSuccessCallback { registerView.userInput.error = null }
+                        .check()
 
                     val validPassword = registerView.passInput.validator()
                         .nonEmpty()
@@ -151,11 +143,9 @@ class ScrollingActivity : AppCompatActivity() {
                         .atleastOneSpecialCharacters()
                         .atleastOneNumber()
                         .minLength(4)
-                        .addErrorCallback {
-                            registerView.passInput.error = it
-                        }.addSuccessCallback {
-                            registerView.passInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.passInput.error = it }
+                        .addSuccessCallback { registerView.passInput.error = null }
+                        .check()
 
                     val validCPassword = registerView.cPassInput.validator()
                         .nonEmpty()
@@ -163,11 +153,9 @@ class ScrollingActivity : AppCompatActivity() {
                         .atleastOneSpecialCharacters()
                         .atleastOneNumber()
                         .minLength(4)
-                        .addErrorCallback {
-                            registerView.cPassInput.error = it
-                        }.addSuccessCallback {
-                            registerView.cPassInput.error = null
-                        }.check()
+                        .addErrorCallback { registerView.cPassInput.error = it }
+                        .addSuccessCallback { registerView.cPassInput.error = null }
+                        .check()
 
                     // If any of the inputs is not valid, return
                     if (validEmail.not() || validFirstname.not() || validLastname.not() || validUsername.not() || validPassword.not() || validCPassword.not()) {
@@ -227,20 +215,16 @@ class ScrollingActivity : AppCompatActivity() {
                 val validUsername = loginView.usernameInput.validator()
                     .nonEmpty()
                     .minLength(4)
-                    .addErrorCallback {
-                        loginView.usernameInput.error = it
-                    }.addSuccessCallback {
-                        loginView.usernameInput.error = null
-                    }.check()
+                    .addErrorCallback { loginView.usernameInput.error = it }
+                    .addSuccessCallback { loginView.usernameInput.error = null }
+                    .check()
 
                 val validPassword = loginView.passwordInput.validator()
                     .nonEmpty()
                     .minLength(4)
-                    .addErrorCallback {
-                        loginView.passwordInput.error = it
-                    }.addSuccessCallback {
-                        loginView.passwordInput.error = null
-                    }.check()
+                    .addErrorCallback { loginView.passwordInput.error = it }
+                    .addSuccessCallback { loginView.passwordInput.error = null }
+                    .check()
 
                 if (validUsername.not() || validPassword.not()) {
                     return@onClick
