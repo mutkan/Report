@@ -18,7 +18,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -29,8 +29,8 @@ dependencies {
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
     implementation "org.jetbrains.anko:anko:$anko_version"
     implementation "org.jetbrains.anko:anko-design:$anko_version"
     implementation 'com.github.kittinunf.fuel:fuel-android:1.12.1'
@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.android.support:support-v4:28.1.1'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.core:core-ktx:1.0.2'
-    implementation "com.wajahatkarim3.easyvalidation:easyvalidation-core:1.0.1"
+    implementation 'com.wajahatkarim3.easyvalidation:easyvalidation-core:1.0.1'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.github.pwittchen:swipe-rx2:0.3.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
