@@ -16,6 +16,7 @@ import com.github.kittinunf.fuel.android.extension.responseJson
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.result.Result
 import com.google.android.material.snackbar.Snackbar
+import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.Utils
@@ -68,7 +69,7 @@ class ScrollingActivity : AppCompatActivity() {
 
         fab.setOnClickListener { view ->
             if (Api.isLoggedin.not()) {
-                Snackbar.make(view, "Login before creating a report", Snackbar.LENGTH_LONG).show()
+                Utils.showSnackbar(view, applicationContext, "Login before creating a report", Snackbar.LENGTH_LONG)
                 return@setOnClickListener
             }
 
@@ -110,49 +111,109 @@ class ScrollingActivity : AppCompatActivity() {
 
                 // Register dialog neutral button
                 registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
-                    // Input checks
-                    if (registerView.firstInput.text.isNullOrEmpty() || registerView.lastInput.text.isNullOrEmpty() || registerView.userInput.text.isNullOrEmpty() || registerView.passInput.text.isNullOrEmpty() || registerView.cPassInput.text.isNullOrEmpty() || registerView.emailInput.text.isNullOrEmpty()) {
-                        Snackbar.make(registerView, "Please complete all fields", Snackbar.LENGTH_LONG).show()
-                    } else if (registerView.passInput.text.length < 4) {
-                        Snackbar.make(registerView, "Password needs to be atleast 4 characters long", Snackbar.LENGTH_LONG).show()
-                    } else if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
-                        Snackbar.make(registerView, "Passwords do not match", Snackbar.LENGTH_LONG).show()
-                    } else {
-                        val reqbody = """
-                            {
-                                "firstName": "${registerView.firstInput.text}",
-                                "lastName": "${registerView.lastInput.text}",
-                                "username": "${registerView.userInput.text}",
-                                "password": "${registerView.passInput.text}",
-                                "email": "${registerView.emailInput.text}"
-                            }
-                        """.trimMargin()
+                    val validEmail = registerView.emailInput.validator()
+                        .validEmail()
+                        .nonEmpty()
+                        .addErrorCallback {
+                            registerView.emailInput.error = it
+                        }.addSuccessCallback {
+                            registerView.emailInput.error = null
+                        }.check()
 
-                        launch(Dispatchers.IO) {
-                            val (_, _, result) = Fuel.post("/auth/register")
-                                    .header(mapOf("Content-Type" to "application/json"))
-                                    .body(reqbody)
-                                    .responseJson()
+                    val validFirstname = registerView.firstInput.validator()
+                        .nonEmpty()
+                        .addErrorCallback {
+                            registerView.firstInput.error = it
+                        }.addSuccessCallback {
+                            registerView.firstInput.error = null
+                        }.check()
 
-                            val (data, error) = result
-                            when (result) {
-                                is Result.Failure -> {
-                                    if (error != null) {
-                                        val json = String(error.response.data)
-                                        if (Utils.isJSON(json)) {
-                                            val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                            Snackbar.make(registerView, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
-                                        } else {
-                                            Snackbar.make(registerView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
-                                        }
+                    val validLastname = registerView.lastInput.validator()
+                        .nonEmpty()
+                        .addErrorCallback {
+                            registerView.lastInput.error = it
+                        }.addSuccessCallback {
+                            registerView.lastInput.error = null
+                        }.check()
+
+                    val validUsername = registerView.userInput.validator()
+                        .nonEmpty()
+                        .minLength(4)
+                        .addErrorCallback {
+                            registerView.userInput.error = it
+                        }.addSuccessCallback {
+                            registerView.userInput.error = null
+                        }.check()
+
+                    val validPassword = registerView.passInput.validator()
+                        .nonEmpty()
+                        .atleastOneUpperCase()
+                        .atleastOneSpecialCharacters()
+                        .atleastOneNumber()
+                        .minLength(4)
+                        .addErrorCallback {
+                            registerView.passInput.error = it
+                        }.addSuccessCallback {
+                            registerView.passInput.error = null
+                        }.check()
+
+                    val validCPassword = registerView.cPassInput.validator()
+                        .nonEmpty()
+                        .atleastOneUpperCase()
+                        .atleastOneSpecialCharacters()
+                        .atleastOneNumber()
+                        .minLength(4)
+                        .addErrorCallback {
+                            registerView.cPassInput.error = it
+                        }.addSuccessCallback {
+                            registerView.cPassInput.error = null
+                        }.check()
+
+                    // If any of the inputs is not valid, return
+                    if (validEmail.not() || validFirstname.not() || validLastname.not() || validUsername.not() || validPassword.not() || validCPassword.not()) {
+                        return@onClick
+                    }
+
+                    // Check if password and confirm password are the same
+                    if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
+                        Utils.showSnackbar(registerView, applicationContext, "Passwords do not match", Snackbar.LENGTH_LONG)
+                        return@onClick
+                    }
+
+                    val reqbody = """
+                        {
+                            "firstName": "${registerView.firstInput.text}",
+                            "lastName": "${registerView.lastInput.text}",
+                            "username": "${registerView.userInput.text}",
+                            "password": "${registerView.passInput.text}",
+                            "email": "${registerView.emailInput.text}"
+                        }
+                    """.trimMargin()
+
+                    launch(Dispatchers.IO) {
+                        val (_, _, result) = Fuel.post("/auth/register")
+                            .header(mapOf("Content-Type" to "application/json"))
+                            .body(reqbody)
+                            .responseJson()
+
+                        val (data, error) = result
+                        when (result) {
+                            is Result.Failure -> {
+                                if (error != null) {
+                                    val json = String(error.response.data)
+                                    if (Utils.isJSON(json)) {
+                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                                        Utils.showSnackbar(registerView, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                    } else {
+                                        Utils.showSnackbar(registerView, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                                     }
                                 }
-                                is Result.Success -> {
-                                    if (data != null) {
-                                        val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
-                                        withContext(Dispatchers.Main) { registerDialog.dismiss() }
-                                        Snackbar.make(loginView, response.data.message, Snackbar.LENGTH_LONG).show()
-                                    }
+                            }
+                            is Result.Success -> {
+                                if (data != null) {
+                                    val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
+                                    withContext(Dispatchers.Main) { registerDialog.dismiss() }
+                                    Utils.showSnackbar(loginView, applicationContext, response.data.message, Snackbar.LENGTH_LONG)
                                 }
                             }
                         }
@@ -162,60 +223,79 @@ class ScrollingActivity : AppCompatActivity() {
 
             // Login dialog positive button
             loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
-                if (loginView.usernameInput.text.isNullOrEmpty() || loginView.passwordInput.text.isNullOrEmpty()) {
-                    Snackbar.make(loginView, "Please complete all fields", Snackbar.LENGTH_LONG).show()
-                } else {
-                    loginDialog.pb_login.visibility = View.VISIBLE
-                    loginDialog.usernameInput.visibility = View.INVISIBLE
-                    loginDialog.passwordInput.visibility = View.INVISIBLE
 
-                    launch(Dispatchers.IO) {
-                        val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
-                        val (_, _, result) = Fuel.post("/auth/login")
-                                .header(mapOf("Content-Type" to "application/json"))
-                                .body(reqbody)
-                                .responseJson()
+                val validUsername = loginView.usernameInput.validator()
+                    .nonEmpty()
+                    .minLength(4)
+                    .addErrorCallback {
+                        loginView.usernameInput.error = it
+                    }.addSuccessCallback {
+                        loginView.usernameInput.error = null
+                    }.check()
 
-                        val (data, error) = result
-                        when (result) {
-                            is Result.Failure -> {
-                                withContext(Dispatchers.Main) {
-                                    loginDialog.pb_login.visibility = View.GONE
-                                    loginDialog.usernameInput.visibility = View.VISIBLE
-                                    loginDialog.passwordInput.visibility = View.VISIBLE
-                                }
+                val validPassword = loginView.passwordInput.validator()
+                    .nonEmpty()
+                    .minLength(4)
+                    .addErrorCallback {
+                        loginView.passwordInput.error = it
+                    }.addSuccessCallback {
+                        loginView.passwordInput.error = null
+                    }.check()
 
-                                if (error != null) {
-                                    withContext(Dispatchers.Main) { btn_login.text = getString(R.string.login_out, "Login") }
-                                    val json = String(error.response.data)
-                                    if (Utils.isJSON(json)) {
-                                        val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                        Snackbar.make(loginView, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
-                                    } else {
-                                        Snackbar.make(loginView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
-                                    }
+                if (validUsername.not() || validPassword.not()) {
+                    return@onClick
+                }
+
+                loginDialog.pb_login.visibility = View.VISIBLE
+                loginDialog.usernameInput.visibility = View.INVISIBLE
+                loginDialog.passwordInput.visibility = View.INVISIBLE
+
+                launch(Dispatchers.IO) {
+                    val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
+                    val (_, _, result) = Fuel.post("/auth/login")
+                        .header(mapOf("Content-Type" to "application/json"))
+                        .body(reqbody)
+                        .responseJson()
+
+                    val (data, error) = result
+                    when (result) {
+                        is Result.Failure -> {
+                            withContext(Dispatchers.Main) {
+                                loginDialog.pb_login.visibility = View.GONE
+                                loginDialog.usernameInput.visibility = View.VISIBLE
+                                loginDialog.passwordInput.visibility = View.VISIBLE
+                            }
+
+                            if (error != null) {
+                                withContext(Dispatchers.Main) { btn_login.text = getString(R.string.login_out, "Login") }
+                                val json = String(error.response.data)
+                                if (Utils.isJSON(json)) {
+                                    val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                                    Utils.showSnackbar(loginView, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                } else {
+                                    Utils.showSnackbar(loginView, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                                 }
                             }
-                            is Result.Success -> {
-                                if (data != null) {
-                                    val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
-                                    token = response.data.token
-                                    sharedPreferences.edit().putString("token", token).apply()
+                        }
+                        is Result.Success -> {
+                            if (data != null) {
+                                val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
+                                token = response.data.token
+                                sharedPreferences.edit().putString("token", token).apply()
 
-                                    Api.isLoggedin = true
+                                Api.isLoggedin = true
 
-                                    val reports = fetchReportsAsync().await()
-                                    val user = fetchUserInfoAsync().await()
+                                val reports = fetchReportsAsync().await()
+                                val user = fetchUserInfoAsync().await()
 
-                                    withContext(Dispatchers.Main) {
-                                        btn_login.text = getString(R.string.login_out, "Logout")
-                                        loadReports(reports)
-                                        loginDialog.dismiss()
-                                    }
-
-                                    val fullName = if (user != null) "${user.firstName} ${user.lastName}" else ""
-                                    Snackbar.make(main_view, "Welcome $fullName", Snackbar.LENGTH_LONG).show()
+                                withContext(Dispatchers.Main) {
+                                    btn_login.text = getString(R.string.login_out, "Logout")
+                                    loadReports(reports)
+                                    loginDialog.dismiss()
                                 }
+
+                                val fullName = if (user != null) "${user.firstName} ${user.lastName}" else ""
+                                Utils.showSnackbar(main_view, applicationContext, "Welcome $fullName", Snackbar.LENGTH_LONG)
                             }
                         }
                     }
@@ -280,9 +360,9 @@ class ScrollingActivity : AppCompatActivity() {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                            Utils.showSnackbar(main_view, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
                         } else {
-                            Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                            Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
 
@@ -327,9 +407,9 @@ class ScrollingActivity : AppCompatActivity() {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Snackbar.make(main_view, errorResponse.data.message, Snackbar.LENGTH_LONG).show()
+                            Utils.showSnackbar(main_view, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
                         } else {
-                            Snackbar.make(main_view, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG).show()
+                            Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
 
@@ -385,6 +465,12 @@ class ScrollingActivity : AppCompatActivity() {
                 cardView.tv_note.text = getString(R.string.tv_note_text, note)
                 cardView.tv_created.text = getString(R.string.tv_created_text, Utils.formatISOString(report.createdAt))
                 cardView.ib_show.setOnClickListener {
+                    val intent = Intent(this, ShowReportActivity::class.java)
+                    intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))
+                    startActivity(intent)
+                }
+
+                cardView.setOnClickListener {
                     val intent = Intent(this, ShowReportActivity::class.java)
                     intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))
                     startActivity(intent)

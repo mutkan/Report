@@ -9,4 +9,8 @@
     <string name="tv_created_text">%1$s</string>
     <string name="tv_note_text">%1$s</string>
     <string name="tv_show_note">%1$s</string>
+    <string name="register_first_name">First Name</string>
+    <string name="register_last_name">Last Name</string>
+    <string name="register_confirm_password">Confirm password</string>
+    <string name="register_email">Email</string>
 </resources>
