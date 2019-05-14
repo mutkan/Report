@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.login_out, "Login")
 
         fab.setOnClickListener { view ->
-            if (Api.isLoggedin.not()) {
+            if (!Api.isLoggedin) {
                 Utils.showSnackbar(view, applicationContext, "Login before creating a report", Snackbar.LENGTH_LONG)
                 return@setOnClickListener
             }
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
                         .check()
 
                     // If any of the inputs is not valid, return
-                    if (validEmail.not() || validFirstname.not() || validLastname.not() || validUsername.not() || validPassword.not() || validCPassword.not()) {
+                    if (!validEmail || !validFirstname || !validLastname || !validUsername || !validPassword || !validCPassword) {
                         return@onClick
                     }
 
@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                     .addSuccessCallback { loginView.passwordInput.error = null }
                     .check()
 
-                if (validUsername.not() || validPassword.not()) {
+                if (!validUsername || !validPassword) {
                     return@onClick
                 }
 
@@ -327,7 +327,7 @@ class MainActivity : AppCompatActivity() {
      * @return Deferred user, await in coroutine scope
      */
     private fun fetchUserInfoAsync(): Deferred<User?> {
-        if (Api.isLoggedin.not()) {
+        if (!Api.isLoggedin) {
             return CompletableDeferred(null)
         }
 
@@ -374,7 +374,7 @@ class MainActivity : AppCompatActivity() {
      * @return Deferred list of reports, await in coroutine scope
      */
     private fun fetchReportsAsync(): Deferred<List<Report>?> {
-        if (Api.isLoggedin.not()) {
+        if (!Api.isLoggedin) {
             return CompletableDeferred(null)
         }
 

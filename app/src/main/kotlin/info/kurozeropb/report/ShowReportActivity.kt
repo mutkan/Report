@@ -12,6 +12,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_show_report.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 @UnstableDefault
 class ShowReportActivity : AppCompatActivity() {
@@ -26,12 +27,7 @@ class ShowReportActivity : AppCompatActivity() {
 
         val reportString = intent.getStringExtra("report")
         val report = Json.nonstrict.parse(Report.serializer(), reportString)
-
         tv_show_note.text = getString(R.string.tv_show_note, report.note)
-
-        btn_report_back.setOnClickListener {
-            finish()
-        }
 
         swipe = Swipe(500, 500)
         disposable = swipe.observe()
@@ -43,6 +39,8 @@ class ShowReportActivity : AppCompatActivity() {
                     else -> return@subscribe
                 }
             }
+
+        btn_report_back.onClick { finish() }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {

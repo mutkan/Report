@@ -9,6 +9,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_create_report.*
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 class CreateReportActivity : AppCompatActivity() {
     private lateinit var swipe: Swipe
@@ -20,11 +21,6 @@ class CreateReportActivity : AppCompatActivity() {
         setSupportActionBar(create_report_toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        btn_back.setOnClickListener {
-            finish()
-        }
-
-
         swipe = Swipe(500, 500)
         disposable = swipe.observe()
             .subscribeOn(Schedulers.computation())
@@ -35,6 +31,8 @@ class CreateReportActivity : AppCompatActivity() {
                     else -> return@subscribe
                 }
             }
+
+        btn_back.onClick { finish() }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
