@@ -37,7 +37,7 @@ lateinit var token: String
 
 @UnstableDefault
 @SuppressLint("InflateParams")
-class ScrollingActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +73,7 @@ class ScrollingActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val intent = Intent(this@ScrollingActivity, CreateReportActivity::class.java)
+            val intent = Intent(this@MainActivity, CreateReportActivity::class.java)
             startActivity(intent)
         }
 
@@ -89,10 +89,10 @@ class ScrollingActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val loginFactory = LayoutInflater.from(this@ScrollingActivity)
+            val loginFactory = LayoutInflater.from(this@MainActivity)
             val loginView = loginFactory.inflate(R.layout.login_dialog, null)
 
-            val loginDialog = AlertDialog.Builder(this@ScrollingActivity)
+            val loginDialog = AlertDialog.Builder(this@MainActivity)
                     .setView(loginView)
                     .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
                     .setNeutralButton("Register") { _, _ -> }
@@ -101,9 +101,9 @@ class ScrollingActivity : AppCompatActivity() {
 
             // Login dialog neutral button (REGISTER)
             loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-                val registerFactory = LayoutInflater.from(this@ScrollingActivity)
+                val registerFactory = LayoutInflater.from(this@MainActivity)
                 val registerView = registerFactory.inflate(R.layout.register_dialog, null)
-                val registerDialog = AlertDialog.Builder(this@ScrollingActivity)
+                val registerDialog = AlertDialog.Builder(this@MainActivity)
                         .setView(registerView)
                         .setNegativeButton("Cancel") { d, _ -> d.cancel() }
                         .setPositiveButton("Confirm") { _, _ ->  }.create()

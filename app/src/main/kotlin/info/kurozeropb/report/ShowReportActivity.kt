@@ -3,19 +3,20 @@ package info.kurozeropb.report
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
+import com.github.pwittchen.swipe.library.rx2.Swipe
+import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import info.kurozeropb.report.structures.Report
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_show_report.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import java.lang.Math.abs
 
 @UnstableDefault
 class ShowReportActivity : AppCompatActivity() {
-    private var x1: Float? = 0.toFloat()
-    private var x2: Float? = 0.toFloat()
-    private var velocityX1: Float? = 0.toFloat()
-    private var velocityX2: Float? = 0.toFloat()
-    private var flingCount = 0
+    private lateinit var swipe: Swipe
+    private lateinit var disposable: Disposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,34 +32,28 @@ class ShowReportActivity : AppCompatActivity() {
         btn_report_back.setOnClickListener {
             finish()
         }
+
+        swipe = Swipe(500, 500)
+        disposable = swipe.observe()
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { swipeEvent ->
+                when (swipeEvent) {
+                    SwipeEvent.SWIPING_RIGHT -> finish() // Return to main activity when swiped to the right
+                    else -> return@subscribe
+                }
+            }
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        val action = event?.action
-        if (x1 == 0.toFloat()) {
-            x1 = event?.rawX
-        } else {
-            x2 = event?.rawX
-            val distanceX: Float? = x1!! - x2!!
-            val timeX: Float? = event?.downTime?.toFloat()
+    override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+        swipe.dispatchTouchEvent(event)
+        return super.dispatchTouchEvent(event)
+    }
 
-            velocityX2 = velocityX1 //v2 = previous v1
-            velocityX1 = distanceX!! / timeX!!
-
-            val velocityDelta: Float? = velocityX2!! - velocityX1!!
-            velocityX2 = 0.toFloat()
-            if (velocityX1!! > 0.toFloat() && velocityX1!! == abs(velocityDelta!!)) { // fling left
-                this.flingCount++
-                println("fling left!  fling count is: ${this.flingCount}")
-                return true
-            } else if (velocityX1!! < 0.toFloat() && abs(velocityX1!!) == velocityDelta!! && action == MotionEvent.ACTION_MOVE) { // fling right
-                this.flingCount++
-                finish() // Swipe left to right to go back
-                return true
-            }
-            x1 = 0.toFloat()
+    override fun onPause() {
+        super.onPause()
+        if (!disposable.isDisposed) {
+            disposable.dispose()
         }
-
-        return super.onTouchEvent(event)
     }
 }
