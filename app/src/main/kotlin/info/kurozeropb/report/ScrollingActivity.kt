@@ -99,7 +99,7 @@ class ScrollingActivity : AppCompatActivity() {
                     .setPositiveButton("Login") { _, _ -> }.create()
             loginDialog.show()
 
-            // Login dialog neutral button
+            // Login dialog neutral button (REGISTER)
             loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
                 val registerFactory = LayoutInflater.from(this@ScrollingActivity)
                 val registerView = registerFactory.inflate(R.layout.register_dialog, null)
@@ -109,7 +109,7 @@ class ScrollingActivity : AppCompatActivity() {
                         .setPositiveButton("Confirm") { _, _ ->  }.create()
                 registerDialog.show()
 
-                // Register dialog neutral button
+                // Register dialog positive button (CONFIRM)
                 registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
                     val validEmail = registerView.emailInput.validator()
                         .validEmail()
@@ -209,7 +209,7 @@ class ScrollingActivity : AppCompatActivity() {
                 }
             }
 
-            // Login dialog positive button
+            // Login dialog positive button (LOGIN)
             loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
 
                 val validUsername = loginView.usernameInput.validator()
