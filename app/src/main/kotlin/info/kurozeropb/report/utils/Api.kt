@@ -5,7 +5,7 @@ import info.kurozeropb.report.structures.User
 
 object Api {
     const val baseUrl = "https://reportapp-api.herokuapp.com/v1"
-    const val version = "0.0.8"
+    const val version = "0.0.9"
     const val userAgent = "Report/v$version (https://github.com/reportapp/report)"
 
     var user: User? = null

@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import android.graphics.Point
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
@@ -15,6 +17,7 @@ import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.android.extension.responseJson
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.result.Result
+import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
@@ -38,6 +41,8 @@ lateinit var token: String
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {
+
+    private var mainMenu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -320,6 +325,36 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        mainMenu = menu
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // TODO : Move login/logout button to menu
+        if (item.itemId == R.id.main_menu) {
+            val view = checkNotNull(findViewById<View>(R.id.main_menu))
+
+            val popupMenu = popupMenu {
+                section {
+                    item {
+                        label = "About"
+                        icon = R.drawable.information
+                        callback = {
+                            val intent = Intent(this@MainActivity, AboutActivity::class.java)
+                            startActivity(intent)
+                        }
+                    }
+                }
+            }
+
+            popupMenu.show(this@MainActivity, view)
+            return true
+        }
+        return false
     }
 
     /**
