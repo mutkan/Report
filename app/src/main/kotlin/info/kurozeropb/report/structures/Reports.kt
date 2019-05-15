@@ -12,6 +12,19 @@ data class Report(
 )
 
 @Serializable
+data class ReportData(
+        val message: String,
+        val report: Report
+)
+
+@Serializable
+data class ReportResponse(
+        override val statusCode: Int,
+        override val statusMessage: String,
+        val data: ReportData
+) : BaseResponse
+
+@Serializable
 data class ReportsData(
         val message: String,
         val reports: List<Report>

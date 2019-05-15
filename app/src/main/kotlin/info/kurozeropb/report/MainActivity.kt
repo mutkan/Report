@@ -393,7 +393,6 @@ class MainActivity : AppCompatActivity() {
                             Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
-
                     return@async null
                 }
                 is Result.Success -> {

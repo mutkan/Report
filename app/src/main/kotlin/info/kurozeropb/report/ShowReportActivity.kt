@@ -3,13 +3,20 @@ package info.kurozeropb.report
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.android.extension.responseJson
+import com.github.kittinunf.result.Result
 import com.github.pwittchen.swipe.library.rx2.Swipe
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
-import info.kurozeropb.report.structures.Report
+import com.google.android.material.snackbar.Snackbar
+import info.kurozeropb.report.structures.*
+import info.kurozeropb.report.utils.Api
+import info.kurozeropb.report.utils.Utils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_show_report.*
+import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.jetbrains.anko.sdk27.coroutines.onClick
@@ -26,8 +33,16 @@ class ShowReportActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
         val reportString = intent.getStringExtra("report")
-        val report = Json.nonstrict.parse(Report.serializer(), reportString)
-        tv_show_note.text = getString(R.string.tv_show_note, report.note)
+        var report = Json.nonstrict.parse(Report.serializer(), reportString)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            report = fetchReportByIdAsync(report.rid).await() ?: report
+
+            withContext(Dispatchers.Main) {
+                tv_show_note.text = getString(R.string.tv_show_note, report.note)
+                tv_show_tags.text = getString(R.string.tv_show_tags, report.tags.joinToString(", "))
+            }
+        }
 
         swipe = Swipe(500, 500)
         disposable = swipe.observe()
@@ -52,6 +67,42 @@ class ShowReportActivity : AppCompatActivity() {
         super.onPause()
         if (!disposable.isDisposed) {
             disposable.dispose()
+        }
+    }
+
+    private fun fetchReportByIdAsync(id: Int): Deferred<Report?> {
+        if (!Api.isLoggedin) {
+            return CompletableDeferred(null)
+        }
+
+        return GlobalScope.async {
+            val (_, _, result) = Fuel.get("/report/$id")
+                .header(mapOf("Content-Type" to "application/json"))
+                .header(mapOf("Authorization" to "Bearer $token"))
+                .responseJson()
+
+            val (data, error) = result
+            when (result) {
+                is Result.Failure -> {
+                    if (error != null) {
+                        val json = String(error.response.data)
+                        if (Utils.isJSON(json)) {
+                            val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                            Utils.showSnackbar(show_report_view, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                        } else {
+                            Utils.showSnackbar(show_report_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                        }
+                    }
+                    return@async null
+                }
+                is Result.Success -> {
+                    if (data != null) {
+                        val response = Json.nonstrict.parse(ReportResponse.serializer(), data.content)
+                        return@async response.data.report
+                    }
+                    return@async null
+                }
+            }
         }
     }
 }
