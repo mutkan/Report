@@ -50,7 +50,6 @@ object Utils {
 
         val textViews: ArrayList<View> = arrayListOf()
         snackbar.view.findViewsWithText(textViews, text, View.FIND_VIEWS_WITH_TEXT)
-        // TODO : Debug code
 
         snackbar.setAction("X") { snackbar.dismiss() }
         params.setMargins(params.leftMargin + 10, params.topMargin, params.rightMargin + 10, params.bottomMargin + 10)

@@ -349,7 +349,6 @@ class MainActivity : AppCompatActivity() {
                             Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
-
                     return@async null
                 }
                 is Result.Success -> {
@@ -359,10 +358,8 @@ class MainActivity : AppCompatActivity() {
 
                         val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
                         sharedPreferences.edit().putString("user", ustr).apply()
-
                         return@async Api.user
                     }
-
                     return@async null
                 }
             }
@@ -406,10 +403,8 @@ class MainActivity : AppCompatActivity() {
 
                         val rstr = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
                         sharedPreferences.edit().putString("reports", rstr).apply()
-
                         return@async Api.reports
                     }
-
                     return@async null
                 }
             }
@@ -460,10 +455,8 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
             }
-
             return true
         }
-
         return false
     }
 }
