@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         else null
 
         // Set logged in
-        Api.isLoggedin = Api.token.isNotEmpty() && Api.user != null
+        Api.isLoggedin = Api.token.isNullOrEmpty().not() && Api.user != null
 
         // Set base variables for api requests
         FuelManager.instance.basePath = Api.baseUrl

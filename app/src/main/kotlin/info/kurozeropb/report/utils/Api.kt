@@ -8,8 +8,7 @@ object Api {
     const val version = "0.0.10"
     const val userAgent = "Report/v$version (https://github.com/reportapp/report)"
 
-    lateinit var token: String
-
+    var token: String? = null
     var user: User? = null
     var reports: List<Report>? = null
     var isLoggedin: Boolean = false
