@@ -50,19 +50,15 @@ class MainActivity : AppCompatActivity() {
 
         // Get saved preferences
         sharedPreferences = getSharedPreferences("reportapp", Context.MODE_PRIVATE)
-        Api.token = sharedPreferences.getString("token", "") ?: ""
+        Api.token = sharedPreferences.getString("token", "")
 
         // Parse saved userinfo
-        val userstr = sharedPreferences.getString("user", "") ?: ""
-        Api.user = if (userstr.isNotEmpty())
-            Json.nonstrict.parse(User.serializer(), userstr)
-        else null
+        val jsonUser = sharedPreferences.getString("user", "") ?: ""
+        Api.user = if (jsonUser.isNotEmpty()) Json.nonstrict.parse(User.serializer(), jsonUser) else null
 
         // Parse saved reports
-        val rstr = sharedPreferences.getString("reports", "") ?: ""
-        Api.reports = if (rstr.isNotEmpty())
-            Json.nonstrict.parse(Report.serializer().list, rstr)
-        else null
+        val jsonReports = sharedPreferences.getString("reports", "") ?: ""
+        Api.reports = if (jsonReports.isNotEmpty()) Json.nonstrict.parse(Report.serializer().list, jsonReports) else null
 
         // Set logged in
         Api.isLoggedin = Api.token.isNullOrEmpty().not() && Api.user != null
@@ -154,7 +150,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun logout() {
         if (Api.isLoggedin) {
-            Api.token = ""
+            Api.token = null
             Api.user = null
             sharedPreferences.edit().remove("token").apply()
             sharedPreferences.edit().remove("user").apply()
@@ -345,7 +341,7 @@ class MainActivity : AppCompatActivity() {
                         if (data != null) {
                             val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
                             Api.token = response.data.token
-                            sharedPreferences.edit().putString("token", Api.token).apply()
+                            sharedPreferences.edit().putString("token", Api.token ?: "").apply()
 
                             Api.isLoggedin = true
 
