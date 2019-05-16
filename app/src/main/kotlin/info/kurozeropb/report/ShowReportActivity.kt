@@ -87,7 +87,7 @@ class ShowReportActivity : AppCompatActivity() {
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/report/$id")
                 .header(mapOf("Content-Type" to "application/json"))
-                .header(mapOf("Authorization" to "Bearer $token"))
+                .header(mapOf("Authorization" to "Bearer ${Api.token}"))
                 .responseJson()
 
             val (data, error) = result

@@ -36,7 +36,6 @@ import kotlinx.serialization.list
 import org.jetbrains.anko.sdk27.coroutines.onClick
 
 lateinit var sharedPreferences: SharedPreferences
-lateinit var token: String
 
 @UnstableDefault
 @SuppressLint("InflateParams")
@@ -51,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         // Get saved preferences
         sharedPreferences = getSharedPreferences("reportapp", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token", "") ?: ""
+        Api.token = sharedPreferences.getString("token", "") ?: ""
 
         // Parse saved userinfo
         val userstr = sharedPreferences.getString("user", "") ?: ""
@@ -66,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         else null
 
         // Set logged in
-        Api.isLoggedin = token.isNotEmpty() && Api.user != null
+        Api.isLoggedin = Api.token.isNotEmpty() && Api.user != null
 
         // Set base variables for api requests
         FuelManager.instance.basePath = Api.baseUrl
@@ -155,12 +154,12 @@ class MainActivity : AppCompatActivity() {
      */
     private fun logout() {
         if (Api.isLoggedin) {
-            token = ""
+            Api.token = ""
             Api.user = null
             sharedPreferences.edit().remove("token").apply()
             sharedPreferences.edit().remove("user").apply()
-            Api.isLoggedin = false
             scrollLayout.removeAllViews()
+            Api.isLoggedin = false
         }
     }
 
@@ -345,8 +344,8 @@ class MainActivity : AppCompatActivity() {
                     is Result.Success -> {
                         if (data != null) {
                             val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
-                            token = response.data.token
-                            sharedPreferences.edit().putString("token", token).apply()
+                            Api.token = response.data.token
+                            sharedPreferences.edit().putString("token", Api.token).apply()
 
                             Api.isLoggedin = true
 
@@ -379,7 +378,7 @@ class MainActivity : AppCompatActivity() {
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/user/@me")
                     .header(mapOf("Content-Type" to "application/json"))
-                    .header(mapOf("Authorization" to "Bearer $token"))
+                    .header(mapOf("Authorization" to "Bearer ${Api.token}"))
                     .responseJson()
 
             val (data, error) = result
@@ -423,7 +422,7 @@ class MainActivity : AppCompatActivity() {
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/report/all")
                     .header(mapOf("Content-Type" to "application/json"))
-                    .header(mapOf("Authorization" to "Bearer $token"))
+                    .header(mapOf("Authorization" to "Bearer ${Api.token}"))
                     .responseJson()
 
             val (data, error) = result
