@@ -4,8 +4,14 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.github.pwittchen.swipe.library.rx2.Swipe
+import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.R
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -14,6 +20,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 object Utils {
+    lateinit var swipe: Swipe
+    lateinit var disposable: Disposable
+
     /** Tests if a string is valid JSON */
     fun isJSON(test: String): Boolean {
         try {
@@ -56,5 +65,12 @@ object Utils {
         snackbar.view.layoutParams = params
         snackbar.view.background = ctx.getDrawable(R.drawable.layout_bg)
         snackbar.show()
+    }
+
+    fun createSwipe(): Observable<SwipeEvent> {
+        swipe = Swipe(450, 450)
+        return swipe.observe()
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 }

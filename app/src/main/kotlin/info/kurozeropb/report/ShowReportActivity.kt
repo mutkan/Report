@@ -6,15 +6,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.android.extension.responseJson
 import com.github.kittinunf.result.Result
-import com.github.pwittchen.swipe.library.rx2.Swipe
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.Utils
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_show_report.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault
@@ -23,8 +19,6 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 
 @UnstableDefault
 class ShowReportActivity : AppCompatActivity() {
-    private lateinit var swipe: Swipe
-    private lateinit var disposable: Disposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +29,9 @@ class ShowReportActivity : AppCompatActivity() {
         val reportString = intent.getStringExtra("report")
         var report = Json.nonstrict.parse(Report.serializer(), reportString)
 
+        tv_show_note.text = getString(R.string.tv_show_note, "Loading...")
+        tv_show_tags.text = getString(R.string.tv_show_tags, "Loading...")
+
         GlobalScope.launch(Dispatchers.IO) {
             report = fetchReportByIdAsync(report.rid).await() ?: report
 
@@ -44,29 +41,37 @@ class ShowReportActivity : AppCompatActivity() {
             }
         }
 
-        swipe = Swipe(500, 500)
-        disposable = swipe.observe()
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { swipeEvent ->
-                when (swipeEvent) {
-                    SwipeEvent.SWIPING_RIGHT -> finish() // Return to main activity when swiped to the right
-                    else -> return@subscribe
-                }
+        val observable = Utils.createSwipe()
+        Utils.disposable = observable.subscribe { swipeEvent ->
+            when (swipeEvent) {
+                SwipeEvent.SWIPING_RIGHT -> finish() // Return to main activity when swiped to the right
+                else -> return@subscribe
             }
+        }
 
         btn_report_back.onClick { finish() }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        swipe.dispatchTouchEvent(event)
+        Utils.swipe.dispatchTouchEvent(event)
         return super.dispatchTouchEvent(event)
     }
 
     override fun onPause() {
         super.onPause()
-        if (!disposable.isDisposed) {
-            disposable.dispose()
+        if (!Utils.disposable.isDisposed) {
+            Utils.disposable.dispose()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val observable = Utils.createSwipe()
+        Utils.disposable = observable.subscribe { swipeEvent ->
+            when (swipeEvent) {
+                SwipeEvent.SWIPING_RIGHT -> finish() // Return to main activity when swiped to the right
+                else -> return@subscribe
+            }
         }
     }
 

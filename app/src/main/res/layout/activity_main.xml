@@ -33,15 +33,6 @@
                 app:titleTextColor="@android:color/white"
                 app:subtitleTextColor="@android:color/white"/>
 
-            <Button
-                android:id="@+id/btn_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/login_out"
-                android:layout_gravity="start"
-                android:textColor="@android:color/white"
-                style="?android:attr/borderlessButtonStyle" />
-
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
