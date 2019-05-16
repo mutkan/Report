@@ -49,21 +49,26 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        // Get saved preferences
         sharedPreferences = getSharedPreferences("reportapp", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "") ?: ""
 
+        // Parse saved userinfo
         val userstr = sharedPreferences.getString("user", "") ?: ""
         Api.user = if (userstr.isNotEmpty())
             Json.nonstrict.parse(User.serializer(), userstr)
         else null
 
+        // Parse saved reports
         val rstr = sharedPreferences.getString("reports", "") ?: ""
         Api.reports = if (rstr.isNotEmpty())
             Json.nonstrict.parse(Report.serializer().list, rstr)
         else null
 
+        // Set logged in
         Api.isLoggedin = token.isNotEmpty() && Api.user != null
 
+        // Set base variables for api requests
         FuelManager.instance.basePath = Api.baseUrl
         FuelManager.instance.baseHeaders = mapOf("User-Agent" to Api.userAgent)
 
@@ -81,7 +86,6 @@ class MainActivity : AppCompatActivity() {
             GlobalScope.launch(Dispatchers.Main) {
                 if (Api.isLoggedin) {
                     val reports = fetchReportsAsync().await()
-
                     val loaded = loadReports(reports)
                     if (loaded) {
                         swipeContainer.isRefreshing = false
@@ -127,13 +131,7 @@ class MainActivity : AppCompatActivity() {
                     item {
                         label = getString(R.string.login_out, if (Api.isLoggedin) "Logout"  else "Login")
                         icon = if (Api.isLoggedin) R.drawable.logout  else R.drawable.login
-                        callback = {
-                            if (Api.isLoggedin) {
-                                logout()
-                            } else {
-                                login()
-                            }
-                        }
+                        callback = { if (Api.isLoggedin) logout() else login() }
                     }
                     item {
                         label = "About"
@@ -152,6 +150,9 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+    /**
+     * If logged in, removes the user data and clears all items in the scroll-layout
+     */
     private fun logout() {
         if (Api.isLoggedin) {
             token = ""
@@ -163,6 +164,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * If not logged in, makes an api request and saves the jwt token it returns
+     * than fetches the autheticated user's reports and userinfo
+     */
     private fun login() {
         if (Api.isLoggedin) return
 
@@ -364,7 +369,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Request info about the currently logged in user
-     * @return Deferred user, await in coroutine scope
+     * @return [Deferred] user, await in coroutine scope
      */
     private fun fetchUserInfoAsync(): Deferred<User?> {
         if (!Api.isLoggedin) {
@@ -408,7 +413,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Request all reports from the api for the currently logged in user
-     * @return Deferred list of reports, await in coroutine scope
+     * @return [Deferred] list of reports, await in coroutine scope
      */
     private fun fetchReportsAsync(): Deferred<List<Report>?> {
         if (!Api.isLoggedin) {
@@ -450,6 +455,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Load fetched reports into the scroll-layout
+     * @return [Boolean]
+     */
     private fun loadReports(reports: List<Report>?): Boolean {
         if (reports != null) {
             scrollLayout.removeAllViews()

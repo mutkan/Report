@@ -75,6 +75,10 @@ class ShowReportActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Fetch a single report
+     * @return [Deferred] report
+     */
     private fun fetchReportByIdAsync(id: Int): Deferred<Report?> {
         if (!Api.isLoggedin) {
             return CompletableDeferred(null)
