@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         fab.setOnClickListener { view ->
             if (!Api.isLoggedin) {
-                Utils.showSnackbar(view, applicationContext, "Login before creating a report", Snackbar.LENGTH_LONG)
+                Utils.showSnackbar(view, this@MainActivity, "Login before creating a report", Snackbar.LENGTH_LONG)
                 return@setOnClickListener
             }
 
@@ -127,6 +127,16 @@ class MainActivity : AppCompatActivity() {
                         label = getString(R.string.login_out, if (Api.isLoggedin) "Logout"  else "Login")
                         icon = if (Api.isLoggedin) R.drawable.logout  else R.drawable.login
                         callback = { if (Api.isLoggedin) logout() else login() }
+                    }
+                    if (Api.isLoggedin) {
+                        item {
+                            label = "Profile"
+                            icon = R.drawable.account
+                            callback = {
+                                val intent = Intent(this@MainActivity, ProfileActivity::class.java)
+                                startActivity(intent)
+                            }
+                        }
                     }
                     item {
                         label = "About"
@@ -241,7 +251,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Check if password and confirm password are the same
                 if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
-                    Utils.showSnackbar(registerView, applicationContext, "Passwords do not match", Snackbar.LENGTH_LONG)
+                    Utils.showSnackbar(registerView, this@MainActivity, "Passwords do not match", Snackbar.LENGTH_LONG)
                     return@onClick
                 }
 
@@ -268,9 +278,9 @@ class MainActivity : AppCompatActivity() {
                                 val json = String(error.response.data)
                                 if (Utils.isJSON(json)) {
                                     val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                    Utils.showSnackbar(registerView, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                    Utils.showSnackbar(registerView, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
                                 } else {
-                                    Utils.showSnackbar(registerView, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                                    Utils.showSnackbar(registerView, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                                 }
                             }
                         }
@@ -278,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                             if (data != null) {
                                 val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
                                 withContext(Dispatchers.Main) { registerDialog.dismiss() }
-                                Utils.showSnackbar(loginView, applicationContext, response.data.message, Snackbar.LENGTH_LONG)
+                                Utils.showSnackbar(loginView, this@MainActivity, response.data.message, Snackbar.LENGTH_LONG)
                             }
                         }
                     }
@@ -331,9 +341,9 @@ class MainActivity : AppCompatActivity() {
                             val json = String(error.response.data)
                             if (Utils.isJSON(json)) {
                                 val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                Utils.showSnackbar(loginView, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                Utils.showSnackbar(loginView, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
                             } else {
-                                Utils.showSnackbar(loginView, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                                Utils.showSnackbar(loginView, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                             }
                         }
                     }
@@ -354,7 +364,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             val fullName = if (user != null) "${user.firstName} ${user.lastName}" else ""
-                            Utils.showSnackbar(main_view, applicationContext, "Welcome $fullName", Snackbar.LENGTH_LONG)
+                            Utils.showSnackbar(main_view, this@MainActivity, "Welcome $fullName", Snackbar.LENGTH_LONG)
                         }
                     }
                 }
@@ -384,9 +394,9 @@ class MainActivity : AppCompatActivity() {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Utils.showSnackbar(main_view, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                            Utils.showSnackbar(main_view, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
                         } else {
-                            Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                            Utils.showSnackbar(main_view, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
                     return@async null
@@ -428,9 +438,9 @@ class MainActivity : AppCompatActivity() {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Utils.showSnackbar(main_view, applicationContext, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                            Utils.showSnackbar(main_view, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
                         } else {
-                            Utils.showSnackbar(main_view, applicationContext, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                            Utils.showSnackbar(main_view, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
                         }
                     }
                     return@async null
