@@ -356,15 +356,24 @@ class MainActivity : AppCompatActivity() {
                             Api.isLoggedin = true
 
                             val reports = fetchReportsAsync().await()
-                            val user = fetchUserInfoAsync().await()
+                            // TODO : Return a Pair just like fetchUserInfoAsync()
 
-                            withContext(Dispatchers.Main) {
-                                loadReports(reports)
-                                loginDialog.dismiss()
+                            val userPair = fetchUserInfoAsync().await()
+                            when {
+                                userPair.first != null -> {
+                                    val user = userPair.first as User // We can safely cast this because we already check userPair.first
+                                    withContext(Dispatchers.Main) {
+                                        loadReports(reports)
+                                        loginDialog.dismiss()
+                                    }
+                                    Utils.showSnackbar(main_view, this@MainActivity, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG)
+                                }
+                                userPair.second != null -> {
+                                    val resError = userPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
+                                    Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                                }
+                                else -> Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
                             }
-
-                            val fullName = if (user != null) "${user.firstName} ${user.lastName}" else ""
-                            Utils.showSnackbar(main_view, this@MainActivity, "Welcome $fullName", Snackbar.LENGTH_LONG)
                         }
                     }
                 }
@@ -374,11 +383,11 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Request info about the currently logged in user
-     * @return [Deferred] user, await in coroutine scope
+     * @return [Deferred] Pair with User or ErrorResponse, await in coroutine scope
      */
-    private fun fetchUserInfoAsync(): Deferred<User?> {
+    private fun fetchUserInfoAsync(): Deferred<Pair<User?, ErrorResponse?>> {
         if (!Api.isLoggedin) {
-            return CompletableDeferred(null)
+            return CompletableDeferred(Pair(null, null))
         }
 
         return GlobalScope.async {
@@ -393,13 +402,10 @@ class MainActivity : AppCompatActivity() {
                     if (error != null) {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
-                            val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Utils.showSnackbar(main_view, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
-                        } else {
-                            Utils.showSnackbar(main_view, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                            return@async Pair(null, Json.nonstrict.parse(ErrorResponse.serializer(), json))
                         }
                     }
-                    return@async null
+                    return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("Unkown Error")))
                 }
                 is Result.Success -> {
                     if (data != null) {
@@ -408,9 +414,9 @@ class MainActivity : AppCompatActivity() {
 
                         val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
                         sharedPreferences.edit().putString("user", ustr).apply()
-                        return@async Api.user
+                        return@async Pair(Api.user, null)
                     }
-                    return@async null
+                    return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("No data returned by the api")))
                 }
             }
         }
