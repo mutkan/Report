@@ -84,12 +84,11 @@ class MainActivity : AppCompatActivity() {
         swipeContainer.setOnRefreshListener {
             GlobalScope.launch(Dispatchers.Main) {
                 if (Api.isLoggedin) {
-                    val reportsPair = Api.fetchReportsAsync().await()
+                    val (reports, reportsError) = Api.fetchReportsAsync().await()
                     when {
-                        reportsPair.first != null -> Api.reports = reportsPair.first
-                        reportsPair.second != null -> {
-                            val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
-                            Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                        reports != null -> Api.reports = reports
+                        reportsError != null -> {
+                            Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
                             return@launch
                         }
                         else -> {
@@ -118,12 +117,11 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin && pb_reports != null) {
                 pb_reports.visibility = View.VISIBLE
-                val reportsPair = Api.fetchReportsAsync().await()
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
                 when {
-                    reportsPair.first != null -> Api.reports = reportsPair.first
-                    reportsPair.second != null -> {
-                        val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
-                        Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
                         return@launch
                     }
                     else -> {
@@ -383,12 +381,11 @@ class MainActivity : AppCompatActivity() {
                             sharedPreferences.edit().putString("token", Api.token ?: "").apply()
                             Api.isLoggedin = true
 
-                            val reportsPair = Api.fetchReportsAsync().await()
+                            val (reports, reportsError) = Api.fetchReportsAsync().await()
                             when {
-                                reportsPair.first != null -> Api.reports = reportsPair.first
-                                reportsPair.second != null -> {
-                                    val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
-                                    Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                                reports != null -> Api.reports = reports
+                                reportsError != null -> {
+                                    Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
                                     return@launch
                                 }
                                 else -> {
@@ -397,19 +394,17 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
 
-                            val userPair = Api.fetchUserInfoAsync().await()
+                            val (user, userError) = Api.fetchUserInfoAsync().await()
                             when {
-                                userPair.first != null -> {
-                                    val user = userPair.first as User // We can safely cast this because we already check userPair.first
+                                user != null -> {
                                     withContext(Dispatchers.Main) {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
                                     }
                                     Utils.showSnackbar(main_view, this@MainActivity, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG)
                                 }
-                                userPair.second != null -> {
-                                    val resError = userPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
-                                    Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                                userError != null -> {
+                                    Utils.showSnackbar(main_view, this@MainActivity, userError.data.message, Snackbar.LENGTH_LONG)
                                     return@launch
                                 }
                                 else -> {

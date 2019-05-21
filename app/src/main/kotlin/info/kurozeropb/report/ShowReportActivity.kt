@@ -30,12 +30,11 @@ class ShowReportActivity : AppCompatActivity() {
         tv_show_tags.text = getString(R.string.tv_show_tags, "Loading...")
 
         GlobalScope.launch(Dispatchers.IO) {
-            val reportPair = Api.fetchReportByIdAsync(report.rid).await()
+            val (rep, error) = Api.fetchReportByIdAsync(report.rid).await()
             report = when {
-                reportPair.first != null -> reportPair.first as Report
-                reportPair.second != null -> {
-                    val resError = reportPair.second as ErrorResponse
-                    Utils.showSnackbar(show_report_view, this@ShowReportActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                rep != null -> rep
+                error != null -> {
+                    Utils.showSnackbar(show_report_view, this@ShowReportActivity, error.data.message, Snackbar.LENGTH_LONG)
                     return@launch
                 }
                 else -> report
