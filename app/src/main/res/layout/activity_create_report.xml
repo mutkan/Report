@@ -23,7 +23,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:text="@string/report_back"
-            android:textColor="@color/darkgray"
             android:drawableStart="@drawable/arrow_left"
             style="?android:attr/borderlessButtonStyle" />
 

@@ -3,6 +3,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">@color/darkblue</item>
         <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
@@ -12,9 +13,9 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="android:textColorPrimary">@color/darkgray</item>
-        <item name="actionMenuTextColor">@color/darkgray</item>
-        <item name="android:textColorSecondary">@color/darkgray</item>
+        <item name="android:textColorPrimary">@color/darkblue</item>
+        <item name="actionMenuTextColor">@color/darkblue</item>
+        <item name="android:textColorSecondary">@color/darkblue</item>
     </style>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
