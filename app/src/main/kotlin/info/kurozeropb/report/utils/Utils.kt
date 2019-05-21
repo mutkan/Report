@@ -23,6 +23,8 @@ object Utils {
     lateinit var swipe: Swipe
     lateinit var disposable: Disposable
 
+    private const val defaultSwipeThreshold = 350
+
     /** Tests if a string is valid JSON */
     fun isJSON(test: String): Boolean {
         try {
@@ -68,7 +70,7 @@ object Utils {
     }
 
     fun createSwipe(): Observable<SwipeEvent> {
-        swipe = Swipe(450, 450)
+        swipe = Swipe(defaultSwipeThreshold, defaultSwipeThreshold)
         return swipe.observe()
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())

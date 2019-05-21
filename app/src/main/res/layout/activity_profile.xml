@@ -29,7 +29,7 @@
                 android:layout_gravity="start"
                 android:drawableStart="@drawable/arrow_left"
                 android:text="@string/report_back"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/darkgray" />
 
     </androidx.appcompat.widget.Toolbar>
 
