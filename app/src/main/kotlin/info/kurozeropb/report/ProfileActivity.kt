@@ -10,7 +10,9 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import info.kurozeropb.report.utils.Api
+import kotlinx.serialization.UnstableDefault
 
+@UnstableDefault
 class ProfileActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -48,6 +48,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        val version = Api.getVersion(this@MainActivity)
+        val versionCode = Api.getVersionCode(this@MainActivity)
+        Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
+
         // Get saved preferences
         sharedPreferences = getSharedPreferences("reportapp", Context.MODE_PRIVATE)
         Api.token = sharedPreferences.getString("token", "")
@@ -80,8 +84,21 @@ class MainActivity : AppCompatActivity() {
         swipeContainer.setOnRefreshListener {
             GlobalScope.launch(Dispatchers.Main) {
                 if (Api.isLoggedin) {
-                    val reports = fetchReportsAsync().await()
-                    val loaded = loadReports(reports)
+                    val reportsPair = Api.fetchReportsAsync().await()
+                    when {
+                        reportsPair.first != null -> Api.reports = reportsPair.first
+                        reportsPair.second != null -> {
+                            val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
+                            Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                            return@launch
+                        }
+                        else -> {
+                            Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                            return@launch
+                        }
+                    }
+
+                    val loaded = loadReports(Api.reports)
                     if (loaded) {
                         swipeContainer.isRefreshing = false
                     }
@@ -101,9 +118,21 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin && pb_reports != null) {
                 pb_reports.visibility = View.VISIBLE
-                val reports = fetchReportsAsync().await()
+                val reportsPair = Api.fetchReportsAsync().await()
+                when {
+                    reportsPair.first != null -> Api.reports = reportsPair.first
+                    reportsPair.second != null -> {
+                        val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
+                        Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                        return@launch
+                    }
+                    else -> {
+                        Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                        return@launch
+                    }
+                }
 
-                val loaded = loadReports(reports)
+                val loaded = loadReports(Api.reports)
                 if (loaded) {
                     pb_reports.visibility = View.GONE
                 }
@@ -352,18 +381,28 @@ class MainActivity : AppCompatActivity() {
                             val response = Json.nonstrict.parse(AuthResponse.serializer(), data.content)
                             Api.token = response.data.token
                             sharedPreferences.edit().putString("token", Api.token ?: "").apply()
-
                             Api.isLoggedin = true
 
-                            val reports = fetchReportsAsync().await()
-                            // TODO : Return a Pair just like fetchUserInfoAsync()
+                            val reportsPair = Api.fetchReportsAsync().await()
+                            when {
+                                reportsPair.first != null -> Api.reports = reportsPair.first
+                                reportsPair.second != null -> {
+                                    val resError = reportsPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
+                                    Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                                    return@launch
+                                }
+                                else -> {
+                                    Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                                    return@launch
+                                }
+                            }
 
-                            val userPair = fetchUserInfoAsync().await()
+                            val userPair = Api.fetchUserInfoAsync().await()
                             when {
                                 userPair.first != null -> {
                                     val user = userPair.first as User // We can safely cast this because we already check userPair.first
                                     withContext(Dispatchers.Main) {
-                                        loadReports(reports)
+                                        loadReports(Api.reports)
                                         loginDialog.dismiss()
                                     }
                                     Utils.showSnackbar(main_view, this@MainActivity, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG)
@@ -371,96 +410,15 @@ class MainActivity : AppCompatActivity() {
                                 userPair.second != null -> {
                                     val resError = userPair.second as ErrorResponse // We can safely cast this because we already check userPair.second
                                     Utils.showSnackbar(main_view, this@MainActivity, resError.data.message, Snackbar.LENGTH_LONG)
+                                    return@launch
                                 }
-                                else -> Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                                else -> {
+                                    Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                                    return@launch
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    /**
-     * Request info about the currently logged in user
-     * @return [Deferred] Pair with User or ErrorResponse, await in coroutine scope
-     */
-    private fun fetchUserInfoAsync(): Deferred<Pair<User?, ErrorResponse?>> {
-        if (!Api.isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
-        }
-
-        return GlobalScope.async {
-            val (_, _, result) = Fuel.get("/user/@me")
-                    .header(mapOf("Content-Type" to "application/json"))
-                    .header(mapOf("Authorization" to "Bearer ${Api.token}"))
-                    .responseJson()
-
-            val (data, error) = result
-            when (result) {
-                is Result.Failure -> {
-                    if (error != null) {
-                        val json = String(error.response.data)
-                        if (Utils.isJSON(json)) {
-                            return@async Pair(null, Json.nonstrict.parse(ErrorResponse.serializer(), json))
-                        }
-                    }
-                    return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("Unkown Error")))
-                }
-                is Result.Success -> {
-                    if (data != null) {
-                        val response = Json.nonstrict.parse(UserResponse.serializer(), data.content)
-                        Api.user = response.data.user
-
-                        val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
-                        sharedPreferences.edit().putString("user", ustr).apply()
-                        return@async Pair(Api.user, null)
-                    }
-                    return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("No data returned by the api")))
-                }
-            }
-        }
-    }
-
-    /**
-     * Request all reports from the api for the currently logged in user
-     * @return [Deferred] list of reports, await in coroutine scope
-     */
-    private fun fetchReportsAsync(): Deferred<List<Report>?> {
-        if (!Api.isLoggedin) {
-            return CompletableDeferred(null)
-        }
-
-        return GlobalScope.async {
-            val (_, _, result) = Fuel.get("/report/all")
-                    .header(mapOf("Content-Type" to "application/json"))
-                    .header(mapOf("Authorization" to "Bearer ${Api.token}"))
-                    .responseJson()
-
-            val (data, error) = result
-            when (result) {
-                is Result.Failure -> {
-                    if (error != null) {
-                        val json = String(error.response.data)
-                        if (Utils.isJSON(json)) {
-                            val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            Utils.showSnackbar(main_view, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
-                        } else {
-                            Utils.showSnackbar(main_view, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
-                        }
-                    }
-                    return@async null
-                }
-                is Result.Success -> {
-                    if (data != null) {
-                        val response = Json.nonstrict.parse(ReportsResponse.serializer(), data.content)
-                        Api.reports = response.data.reports
-
-                        val rstr = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
-                        sharedPreferences.edit().putString("reports", rstr).apply()
-                        return@async Api.reports
-                    }
-                    return@async null
                 }
             }
         }
