@@ -150,13 +150,17 @@ class MainActivity : AppCompatActivity() {
                 section {
                     item {
                         label = getString(R.string.login_out, if (Api.isLoggedin) "Logout"  else "Login")
+                        labelColor = getColor(R.color.darkblue)
                         icon = if (Api.isLoggedin) R.drawable.logout  else R.drawable.login
+                        iconColor = getColor(R.color.darkblue)
                         callback = { if (Api.isLoggedin) logout() else login() }
                     }
                     if (Api.isLoggedin) {
                         item {
                             label = "Profile"
+                            labelColor = getColor(R.color.darkblue)
                             icon = R.drawable.account
+                            iconColor = getColor(R.color.darkblue)
                             callback = {
                                 val intent = Intent(this@MainActivity, ProfileActivity::class.java)
                                 startActivity(intent)
@@ -165,7 +169,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     item {
                         label = "About"
+                        labelColor = getColor(R.color.darkblue)
                         icon = R.drawable.information
+                        iconColor = getColor(R.color.darkblue)
                         callback = {
                             val intent = Intent(this@MainActivity, AboutActivity::class.java)
                             startActivity(intent)

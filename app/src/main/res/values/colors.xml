@@ -7,8 +7,8 @@
     <color name="darkgray">#6D6C6C</color>
     <color name="darkblue">#7E8894</color>
     <color name="sbBackground">#353535</color>
-    <color name="sbBorderAlert">#FFC107</color>
-    <color name="sbBorderException">#dc143c</color>
-    <color name="sbBorderSuccess">#8BC34A</color>
+    <color name="sbAlert">#FFC107</color>
+    <color name="sbException">#dc143c</color>
+    <color name="sbSuccess">#8BC34A</color>
     <color name="white">#FFFFFF</color>
 </resources>

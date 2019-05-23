@@ -13,11 +13,14 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import org.jetbrains.anko.dimen
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
+
+
 
 object Utils {
     lateinit var swipe: Swipe
@@ -79,11 +82,25 @@ object Utils {
         // Update the snackbar layout and show it
         params.setMargins(params.leftMargin + 10, params.topMargin, params.rightMargin + 10, params.bottomMargin + 10)
         snackbar.view.layoutParams = params
-        snackbar.view.background = when (type) {
-            SnackbarType.SUCCESS -> view.context.getDrawable(R.drawable.sb_success_layout)
-            SnackbarType.ALERT -> view.context.getDrawable(R.drawable.sb_alert_layout)
-            SnackbarType.EXCEPTION -> view.context.getDrawable(R.drawable.sb_exception_layout)
+        val sbIconDrawable = when (type) {
+            SnackbarType.SUCCESS -> {
+                snackbar.view.background = view.context.getDrawable(R.drawable.sb_success_layout)
+                view.context.getDrawable(R.drawable.sb_success_icon)
+            }
+            SnackbarType.ALERT -> {
+                snackbar.view.background = view.context.getDrawable(R.drawable.sb_alert_layout)
+                view.context.getDrawable(R.drawable.sb_alert_icon)
+            }
+            SnackbarType.EXCEPTION -> {
+                snackbar.view.background = view.context.getDrawable(R.drawable.sb_exception_layout)
+                view.context.getDrawable(R.drawable.sb_exception_icon)
+            }
         }
+
+        // Set the snackbar icon
+        sbTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(sbIconDrawable, null, null, null)
+        sbTextView.compoundDrawablePadding = view.context.dimen(R.dimen.snackbar_icon_padding)
+
         snackbar.show()
     }
 

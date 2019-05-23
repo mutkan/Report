@@ -3,7 +3,6 @@ package info.kurozeropb.report.utils
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.android.extension.responseJson
 import com.github.kittinunf.result.Result
-import info.kurozeropb.report.sharedPreferences
 import info.kurozeropb.report.structures.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -73,7 +72,7 @@ object Api {
                         user = response.data.user
 
                         val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
-                        sharedPreferences.edit().putString("user", ustr).apply()
+                        Utils.sharedPreferences.edit().putString("user", ustr).apply()
                         return@async Pair(user, null)
                     }
                     return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("No data returned by the api")))
@@ -114,7 +113,7 @@ object Api {
                         reports = response.data.reports
 
                         val rstr = Json.nonstrict.stringify(Report.serializer().list, response.data.reports)
-                        sharedPreferences.edit().putString("reports", rstr).apply()
+                        Utils.sharedPreferences.edit().putString("reports", rstr).apply()
                         return@async Pair(reports, null)
                     }
                     return@async Pair(null, ErrorResponse(500, "Internal Server Error", ErrorData("No data returned by the api")))
