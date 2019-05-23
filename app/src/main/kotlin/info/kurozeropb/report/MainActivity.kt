@@ -22,10 +22,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.SnackbarType
 import info.kurozeropb.report.utils.Utils.formatISOString
 import info.kurozeropb.report.utils.Utils.isJSON
 import info.kurozeropb.report.utils.Utils.showSnackbar
+import info.kurozeropb.report.utils.Utils.SnackbarType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_scrolling.*
 import kotlinx.android.synthetic.main.login_dialog.*

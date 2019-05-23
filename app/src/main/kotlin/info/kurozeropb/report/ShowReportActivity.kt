@@ -7,8 +7,8 @@ import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.SnackbarType
 import info.kurozeropb.report.utils.Utils
+import info.kurozeropb.report.utils.Utils.SnackbarType
 import kotlinx.android.synthetic.main.activity_show_report.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.UnstableDefault

@@ -1,6 +1,5 @@
 package info.kurozeropb.report.utils
 
-import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -19,17 +18,17 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-enum class SnackbarType {
-    SUCCESS,
-    ALERT,
-    EXCEPTION
-}
-
 object Utils {
     lateinit var swipe: Swipe
     lateinit var disposable: Disposable
 
     private const val defaultSwipeThreshold = 350
+
+    enum class SnackbarType {
+        SUCCESS,
+        ALERT,
+        EXCEPTION
+    }
 
     /** Tests if a string is valid JSON */
     fun isJSON(test: String): Boolean {
