@@ -69,6 +69,12 @@ class MainActivity : AppCompatActivity() {
         FuelManager.instance.basePath = Api.baseUrl
         FuelManager.instance.baseHeaders = mapOf("User-Agent" to Api.userAgent)
 
+        // Welcomes the user back if someone is logged in
+        if (Api.isLoggedin) {
+            val userName = if (Api.user != null) Api.user?.username ?: "<username>" else "<username>"
+            Utils.showSnackbar(main_view, "Welcome back $userName", Snackbar.LENGTH_SHORT, SnackbarType.INFO)
+        }
+
         fab.setOnClickListener { view ->
             if (!Api.isLoggedin) {
                 Utils.showSnackbar(view, "Login before creating a report", Snackbar.LENGTH_LONG, SnackbarType.ALERT)
@@ -405,7 +411,7 @@ class MainActivity : AppCompatActivity() {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
                                     }
-                                    Utils.showSnackbar(main_view, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
+                                    Utils.showSnackbar(main_view, "Welcome ${user.username}", Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
                                 userError != null -> {
                                     Utils.showSnackbar(main_view, userError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)

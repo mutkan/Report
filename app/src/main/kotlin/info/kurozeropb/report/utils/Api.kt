@@ -30,13 +30,13 @@ object Api {
         return packageInfo.versionName
     }
 
-    fun getVersionCode(ctx: Context): Long {
+    fun getVersionCode(ctx: Context): String {
         val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            packageInfo.longVersionCode
+            String.format("%03d", packageInfo.longVersionCode)
         } else {
             @Suppress("DEPRECATION")
-            packageInfo.versionCode.toLong()
+            String.format("%03d", packageInfo.versionCode)
         }
     }
 

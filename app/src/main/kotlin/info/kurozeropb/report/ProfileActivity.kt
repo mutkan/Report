@@ -26,7 +26,7 @@ class ProfileActivity : AppCompatActivity() {
         circularBitmapDrawable.isCircular = true
         iv_avatar.setImageDrawable(circularBitmapDrawable)
 
-        tv_card_fullname.text = if (Api.user != null) "${Api.user?.firstName ?: "<First_Name>"} ${Api.user?.lastName ?: "<Last_Name>"}" else "<Full_Name>"
+        tv_card_fullname.text = if (Api.user != null) "${Api.user?.firstName ?: "<first_name>"} ${Api.user?.lastName ?: "<last_name>"}" else "<full_name>"
 
         val observable = Utils.createSwipe()
         Utils.disposable = observable.subscribe { swipeEvent ->

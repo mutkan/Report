@@ -30,6 +30,7 @@ object Utils {
     private const val defaultSwipeThreshold = 350
 
     enum class SnackbarType {
+        INFO,
         SUCCESS,
         ALERT,
         EXCEPTION
@@ -83,6 +84,10 @@ object Utils {
         params.setMargins(params.leftMargin + 10, params.topMargin, params.rightMargin + 10, params.bottomMargin + 10)
         snackbar.view.layoutParams = params
         val sbIconDrawable = when (type) {
+            Utils.SnackbarType.INFO -> {
+                snackbar.view.background = view.context.getDrawable(R.drawable.sb_info_layout)
+                view.context.getDrawable(R.drawable.sb_info_icon)
+            }
             SnackbarType.SUCCESS -> {
                 snackbar.view.background = view.context.getDrawable(R.drawable.sb_success_layout)
                 view.context.getDrawable(R.drawable.sb_success_icon)
