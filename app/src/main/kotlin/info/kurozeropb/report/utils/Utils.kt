@@ -1,5 +1,6 @@
 package info.kurozeropb.report.utils
 
+import android.content.SharedPreferences
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -21,6 +22,7 @@ import java.util.*
 object Utils {
     lateinit var swipe: Swipe
     lateinit var disposable: Disposable
+    lateinit var sharedPreferences: SharedPreferences
 
     private const val defaultSwipeThreshold = 350
 
