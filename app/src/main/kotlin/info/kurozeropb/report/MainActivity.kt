@@ -22,7 +22,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.Utils
+import info.kurozeropb.report.utils.SnackbarType
+import info.kurozeropb.report.utils.Utils.formatISOString
+import info.kurozeropb.report.utils.Utils.isJSON
+import info.kurozeropb.report.utils.Utils.showSnackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_scrolling.*
 import kotlinx.android.synthetic.main.login_dialog.*
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         fab.setOnClickListener { view ->
             if (!Api.isLoggedin) {
-                Utils.showSnackbar(view, this@MainActivity, "Login before creating a report", Snackbar.LENGTH_LONG)
+                showSnackbar(view, "Login before creating a report", Snackbar.LENGTH_LONG, SnackbarType.ALERT)
                 return@setOnClickListener
             }
 
@@ -88,11 +91,11 @@ class MainActivity : AppCompatActivity() {
                     when {
                         reports != null -> Api.reports = reports
                         reportsError != null -> {
-                            Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
+                            showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             return@launch
                         }
                         else -> {
-                            Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                            showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             return@launch
                         }
                     }
@@ -121,11 +124,11 @@ class MainActivity : AppCompatActivity() {
                 when {
                     reports != null -> Api.reports = reports
                     reportsError != null -> {
-                        Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
+                        showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                         return@launch
                     }
                     else -> {
-                        Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                        showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                         return@launch
                     }
                 }
@@ -278,7 +281,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Check if password and confirm password are the same
                 if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
-                    Utils.showSnackbar(registerView, this@MainActivity, "Passwords do not match", Snackbar.LENGTH_LONG)
+                    showSnackbar(registerView, "Passwords do not match", Snackbar.LENGTH_LONG, SnackbarType.ALERT)
                     return@onClick
                 }
 
@@ -303,11 +306,11 @@ class MainActivity : AppCompatActivity() {
                         is Result.Failure -> {
                             if (error != null) {
                                 val json = String(error.response.data)
-                                if (Utils.isJSON(json)) {
+                                if (isJSON(json)) {
                                     val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                    Utils.showSnackbar(registerView, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                    showSnackbar(registerView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                 } else {
-                                    Utils.showSnackbar(registerView, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                                    showSnackbar(registerView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                 }
                             }
                         }
@@ -315,7 +318,7 @@ class MainActivity : AppCompatActivity() {
                             if (data != null) {
                                 val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
                                 withContext(Dispatchers.Main) { registerDialog.dismiss() }
-                                Utils.showSnackbar(loginView, this@MainActivity, response.data.message, Snackbar.LENGTH_LONG)
+                                showSnackbar(loginView, response.data.message, Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                             }
                         }
                     }
@@ -366,11 +369,11 @@ class MainActivity : AppCompatActivity() {
 
                         if (error != null) {
                             val json = String(error.response.data)
-                            if (Utils.isJSON(json)) {
+                            if (isJSON(json)) {
                                 val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                                Utils.showSnackbar(loginView, this@MainActivity, errorResponse.data.message, Snackbar.LENGTH_LONG)
+                                showSnackbar(loginView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             } else {
-                                Utils.showSnackbar(loginView, this@MainActivity, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG)
+                                showSnackbar(loginView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             }
                         }
                     }
@@ -385,11 +388,11 @@ class MainActivity : AppCompatActivity() {
                             when {
                                 reports != null -> Api.reports = reports
                                 reportsError != null -> {
-                                    Utils.showSnackbar(main_view, this@MainActivity, reportsError.data.message, Snackbar.LENGTH_LONG)
+                                    showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                                 else -> {
-                                    Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                                    showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                             }
@@ -401,14 +404,14 @@ class MainActivity : AppCompatActivity() {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
                                     }
-                                    Utils.showSnackbar(main_view, this@MainActivity, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG)
+                                    showSnackbar(main_view, "Welcome ${user.firstName} ${user.lastName}", Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
                                 userError != null -> {
-                                    Utils.showSnackbar(main_view, this@MainActivity, userError.data.message, Snackbar.LENGTH_LONG)
+                                    showSnackbar(main_view, userError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                                 else -> {
-                                    Utils.showSnackbar(main_view, this@MainActivity, "Failed to get user info", Snackbar.LENGTH_LONG)
+                                    showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                             }
@@ -454,7 +457,7 @@ class MainActivity : AppCompatActivity() {
                     report.note
 
                 cardView.tv_note.text = getString(R.string.tv_note_text, note)
-                cardView.tv_created.text = getString(R.string.tv_created_text, Utils.formatISOString(report.createdAt))
+                cardView.tv_created.text = getString(R.string.tv_created_text, formatISOString(report.createdAt))
                 cardView.ib_show.setOnClickListener {
                     val intent = Intent(this, ShowReportActivity::class.java)
                     intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))

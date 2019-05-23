@@ -7,6 +7,7 @@ import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
+import info.kurozeropb.report.utils.SnackbarType
 import info.kurozeropb.report.utils.Utils
 import kotlinx.android.synthetic.main.activity_show_report.*
 import kotlinx.coroutines.*
@@ -34,7 +35,7 @@ class ShowReportActivity : AppCompatActivity() {
             report = when {
                 rep != null -> rep
                 error != null -> {
-                    Utils.showSnackbar(show_report_view, this@ShowReportActivity, error.data.message, Snackbar.LENGTH_LONG)
+                    Utils.showSnackbar(show_report_view, error.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                     return@launch
                 }
                 else -> report

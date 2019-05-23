@@ -5,5 +5,10 @@
     <color name="colorAccent">#ABC2E0</color>
     <color name="black">#000000</color>
     <color name="darkgray">#6D6C6C</color>
-    <color name="darkblue">#7e8894</color>
+    <color name="darkblue">#7E8894</color>
+    <color name="sbBackground">#353535</color>
+    <color name="sbBorderAlert">#FFC107</color>
+    <color name="sbBorderException">#dc143c</color>
+    <color name="sbBorderSuccess">#8BC34A</color>
+    <color name="white">#FFFFFF</color>
 </resources>
