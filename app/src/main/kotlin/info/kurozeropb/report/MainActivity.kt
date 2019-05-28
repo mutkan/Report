@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                     when {
                         reports != null -> Api.reports = reports
                         reportsError != null -> {
-                            Utils.showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             return@launch
                         }
                         else -> {
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 when {
                     reports != null -> Api.reports = reports
                     reportsError != null -> {
-                        Utils.showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                         return@launch
                     }
                     else -> {
@@ -395,7 +395,7 @@ class MainActivity : AppCompatActivity() {
                             when {
                                 reports != null -> Api.reports = reports
                                 reportsError != null -> {
-                                    Utils.showSnackbar(main_view, reportsError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                                 else -> {
@@ -414,7 +414,7 @@ class MainActivity : AppCompatActivity() {
                                     Utils.showSnackbar(main_view, "Welcome ${user.username}", Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
                                 userError != null -> {
-                                    Utils.showSnackbar(main_view, userError.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                                 else -> {

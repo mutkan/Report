@@ -44,7 +44,6 @@ object Utils {
             } catch (ex1: JSONException) {
                 return false
             }
-
         }
         return true
     }

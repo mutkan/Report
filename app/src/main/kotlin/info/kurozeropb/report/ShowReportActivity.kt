@@ -35,7 +35,7 @@ class ShowReportActivity : AppCompatActivity() {
             report = when {
                 rep != null -> rep
                 error != null -> {
-                    Utils.showSnackbar(show_report_view, error.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                    Utils.showSnackbar(show_report_view, error.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                     return@launch
                 }
                 else -> report
