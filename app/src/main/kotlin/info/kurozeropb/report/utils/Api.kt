@@ -14,7 +14,6 @@ import kotlinx.serialization.list
 import android.content.Context
 import android.os.Build
 
-
 @UnstableDefault
 object Api {
     const val baseUrl = "https://reportapp-api.herokuapp.com/v1"

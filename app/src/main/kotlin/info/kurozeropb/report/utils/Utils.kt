@@ -20,8 +20,6 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-
 object Utils {
     lateinit var swipe: Swipe
     lateinit var disposable: Disposable
@@ -80,11 +78,13 @@ object Utils {
         snackbar.setAction("X") { snackbar.dismiss() }
         snackbar.setActionTextColor(view.context.getColor(R.color.white))
 
-        // Update the snackbar layout and show it
+        // Update the snackbar layout
         params.setMargins(params.leftMargin + 10, params.topMargin, params.rightMargin + 10, params.bottomMargin + 10)
         snackbar.view.layoutParams = params
+
+        // Sets snackbar background layout and returns corresponding icon drawable
         val sbIconDrawable = when (type) {
-            Utils.SnackbarType.INFO -> {
+            SnackbarType.INFO -> {
                 snackbar.view.background = view.context.getDrawable(R.drawable.sb_info_layout)
                 view.context.getDrawable(R.drawable.sb_info_icon)
             }
@@ -106,6 +106,7 @@ object Utils {
         sbTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(sbIconDrawable, null, null, null)
         sbTextView.compoundDrawablePadding = view.context.dimen(R.dimen.snackbar_icon_padding)
 
+        // Show snackbar
         snackbar.show()
     }
 
