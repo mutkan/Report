@@ -46,8 +46,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val version = Api.getVersion(this@MainActivity)
-        val versionCode = Api.getVersionCode(this@MainActivity)
+        val (version, versionCode) = Api.getVersions(this@MainActivity)
         Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
 
         // Get saved preferences

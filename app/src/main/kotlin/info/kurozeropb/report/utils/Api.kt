@@ -24,18 +24,44 @@ object Api {
     var reports: List<Report>? = null
     var isLoggedin: Boolean = false
 
-    fun getVersion(ctx: Context): String {
-        val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
-        return packageInfo.versionName
-    }
-
-    fun getVersionCode(ctx: Context): String {
+    fun getVersions(ctx: Context): Pair<String, String> {
         val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            String.format("%03d", packageInfo.longVersionCode)
+            Pair(packageInfo.versionName, String.format("%03d", packageInfo.longVersionCode))
         } else {
             @Suppress("DEPRECATION")
-            String.format("%03d", packageInfo.versionCode)
+            Pair(packageInfo.versionName, String.format("%03d", packageInfo.versionCode))
+        }
+    }
+
+    fun fetchApiInfoAsync(): Deferred<Pair<ApiInfoData?, ErrorData?>> {
+        return GlobalScope.async {
+            val (_, _, result) = Fuel.get("/")
+                .header(mapOf("Content-Type" to "application/json"))
+                .responseJson()
+
+            val (data, error) = result
+            when (result) {
+                is Result.Failure -> {
+                    if (error != null) {
+                        val json = String(error.response.data)
+                        if (Utils.isJSON(json)) {
+                            val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                            return@async Pair(null, parsedError.data)
+                        } else {
+                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                        }
+                    }
+                    return@async Pair(null, ErrorData("Unkown Error"))
+                }
+                is Result.Success -> {
+                    if (data != null) {
+                        val response = Json.nonstrict.parse(ApiInfoResponse.serializer(), data.content)
+                        return@async Pair(response.data, null)
+                    }
+                    return@async Pair(null, ErrorData("No data returned by the api"))
+                }
+            }
         }
     }
 

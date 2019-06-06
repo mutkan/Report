@@ -30,3 +30,18 @@ data class ErrorResponse(
         override val statusMessage: String,
         val data: ErrorData
 ) : BaseResponse
+
+@Serializable
+data class ApiInfoData(
+    val version: String,
+    val env: String,
+    val routes: List<String>,
+    val message: String
+)
+
+@Serializable
+data class ApiInfoResponse(
+    override val statusCode: Int,
+    override val statusMessage: String,
+    val data: ApiInfoData
+) : BaseResponse
