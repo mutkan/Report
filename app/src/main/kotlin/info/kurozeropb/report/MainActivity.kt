@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.main_menu) {
-            val view = checkNotNull(findViewById<View>(R.id.main_menu))
+            val view = findViewById<View>(R.id.main_menu)
 
             val popupMenu = popupMenu {
                 section {
