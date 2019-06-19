@@ -28,6 +28,8 @@ class AboutActivity : AppCompatActivity() {
         setSupportActionBar(about_toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        tv_about.text = getString(R.string.loading)
+
         val observable = Utils.createSwipe()
         Utils.disposable = observable.subscribe { swipeEvent ->
             when (swipeEvent) {
@@ -41,7 +43,6 @@ class AboutActivity : AppCompatActivity() {
 
         GlobalScope.launch(Dispatchers.IO) {
             val (info, error) = Api.fetchApiInfoAsync().await()
-
             when {
                 info != null -> {
                     withContext(Dispatchers.Main) {

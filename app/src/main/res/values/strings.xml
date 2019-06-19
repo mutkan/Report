@@ -18,4 +18,5 @@
     <string name="tv_show_tags">%1$s</string>
     <string name="profile_card_name">Full Name</string>
     <string name="tv_show_about">%1$s</string>
+    <string name="loading">Loading...</string>
 </resources>
