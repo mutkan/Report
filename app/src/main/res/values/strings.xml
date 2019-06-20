@@ -18,5 +18,17 @@
     <string name="tv_show_tags">%1$s</string>
     <string name="profile_card_name">Full Name</string>
     <string name="tv_show_about">%1$s</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
+    <string name="cancel">Cancel</string>
+    <string name="register">Register</string>
+    <string name="confirm">Confirm</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="profile">Profile</string>
+    <string name="about">About</string>
+    <string name="login_welcome">Welcome %1$s</string>
+    <string name="welcome_back">Welcome back %1$s</string>
+    <string name="error_login">Login before creating a report</string>
+    <string name="failed_userinfo">Failed to get user info</string>
+    <string name="password_not_match">Passwords do not match</string>
 </resources>

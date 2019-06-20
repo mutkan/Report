@@ -70,13 +70,13 @@ class MainActivity : AppCompatActivity() {
 
         // Welcomes the user back if someone is logged in
         if (Api.isLoggedin) {
-            val userName = if (Api.user != null) Api.user?.username ?: "<username>" else "<username>"
-            Utils.showSnackbar(main_view, "Welcome back $userName", Snackbar.LENGTH_SHORT, SnackbarType.INFO)
+            val userName = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
+            Utils.showSnackbar(main_view, getString(R.string.welcome_back, userName), Snackbar.LENGTH_SHORT, SnackbarType.INFO)
         }
 
         fab.setOnClickListener { view ->
             if (!Api.isLoggedin) {
-                Utils.showSnackbar(view, "Login before creating a report", Snackbar.LENGTH_LONG, SnackbarType.ALERT)
+                Utils.showSnackbar(view, getString(R.string.error_login), Snackbar.LENGTH_LONG, SnackbarType.ALERT)
                 return@setOnClickListener
             }
 
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                             return@launch
                         }
                         else -> {
-                            Utils.showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                            Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             return@launch
                         }
                     }
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
                         return@launch
                     }
                     else -> {
-                        Utils.showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                         return@launch
                     }
                 }
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
             val popupMenu = popupMenu {
                 section {
                     item {
-                        label = getString(R.string.login_out, if (Api.isLoggedin) "Logout"  else "Login")
+                        label = if (Api.isLoggedin) getString(R.string.logout)  else getString(R.string.login)
                         labelColor = getColor(R.color.darkblue)
                         icon = if (Api.isLoggedin) R.drawable.logout  else R.drawable.login
                         iconColor = getColor(R.color.darkblue)
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (Api.isLoggedin) {
                         item {
-                            label = "Profile"
+                            label = getString(R.string.profile)
                             labelColor = getColor(R.color.darkblue)
                             icon = R.drawable.account
                             iconColor = getColor(R.color.darkblue)
@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     item {
-                        label = "About"
+                        label = getString(R.string.about)
                         labelColor = getColor(R.color.darkblue)
                         icon = R.drawable.information
                         iconColor = getColor(R.color.darkblue)
@@ -217,9 +217,9 @@ class MainActivity : AppCompatActivity() {
 
         val loginDialog = AlertDialog.Builder(this@MainActivity)
             .setView(loginView)
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-            .setNeutralButton("Register") { _, _ -> }
-            .setPositiveButton("Login") { _, _ -> }.create()
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.cancel() }
+            .setNeutralButton(getString(R.string.register)) { _, _ -> }
+            .setPositiveButton(getString(R.string.login)) { _, _ -> }.create()
         loginDialog.show()
 
         // Login dialog neutral button (REGISTER)
@@ -228,8 +228,8 @@ class MainActivity : AppCompatActivity() {
             val registerView = registerFactory.inflate(R.layout.register_dialog, null)
             val registerDialog = AlertDialog.Builder(this@MainActivity)
                 .setView(registerView)
-                .setNegativeButton("Cancel") { d, _ -> d.cancel() }
-                .setPositiveButton("Confirm") { _, _ ->  }.create()
+                .setNegativeButton(getString(R.string.cancel)) { d, _ -> d.cancel() }
+                .setPositiveButton(getString(R.string.confirm)) { _, _ ->  }.create()
             registerDialog.show()
 
             // Register dialog positive button (CONFIRM)
@@ -287,7 +287,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Check if password and confirm password are the same
                 if (registerView.passInput.text.toString() != registerView.cPassInput.text.toString()) {
-                    Utils.showSnackbar(registerView, "Passwords do not match", Snackbar.LENGTH_LONG, SnackbarType.ALERT)
+                    Utils.showSnackbar(registerView, getString(R.string.password_not_match), Snackbar.LENGTH_LONG, SnackbarType.ALERT)
                     return@onClick
                 }
 
@@ -316,7 +316,7 @@ class MainActivity : AppCompatActivity() {
                                     val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
                                     Utils.showSnackbar(registerView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                 } else {
-                                    Utils.showSnackbar(registerView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    Utils.showSnackbar(registerView, error.message ?: "Unknown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                 }
                             }
                         }
@@ -379,7 +379,7 @@ class MainActivity : AppCompatActivity() {
                                 val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
                                 Utils.showSnackbar(loginView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             } else {
-                                Utils.showSnackbar(loginView, error.message ?: "Unkown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                Utils.showSnackbar(loginView, error.message ?: "Unknown Error", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             }
                         }
                     }
@@ -398,7 +398,7 @@ class MainActivity : AppCompatActivity() {
                                     return@launch
                                 }
                                 else -> {
-                                    Utils.showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                             }
@@ -410,14 +410,14 @@ class MainActivity : AppCompatActivity() {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
                                     }
-                                    Utils.showSnackbar(main_view, "Welcome ${user.username}", Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
+                                    Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
                                 userError != null -> {
                                     Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                                 else -> {
-                                    Utils.showSnackbar(main_view, "Failed to get user info", Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                     return@launch
                                 }
                             }

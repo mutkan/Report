@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Rapport</string>
+    <string name="action_settings">Settings</string>
+    <string name="login_out">%1$s</string>
+    <string name="username">Gebruikersnaam</string>
+    <string name="password">Wachtwoord</string>
+    <string name="report_back">terug</string>
+    <string name="report_title">Aangemaakt op %1$s</string>
+    <string name="tv_created_text">%1$s</string>
+    <string name="tv_note_text">%1$s</string>
+    <string name="tv_show_note">%1$s</string>
+    <string name="register_first_name">Voornaam</string>
+    <string name="register_last_name">Achternaam</string>
+    <string name="register_confirm_password">Bevestig wachtwoord</string>
+    <string name="register_email">Email</string>
+    <string name="title_note">Notitie:</string>
+    <string name="title_tags">Labels:</string>
+    <string name="tv_show_tags">%1$s</string>
+    <string name="profile_card_name">Voledige naam</string>
+    <string name="tv_show_about">%1$s</string>
+    <string name="loading">Laden…</string>
+    <string name="cancel">Annuleren</string>
+    <string name="register">Registreren</string>
+    <string name="confirm">Bevestigen</string>
+    <string name="login">Inloggen</string>
+    <string name="logout">Uitloggen</string>
+    <string name="profile">Profiel</string>
+    <string name="about">About</string>
+    <string name="login_welcome">Welkom %1$s</string>
+    <string name="welcome_back">Welkom terug %1$s</string>
+    <string name="error_login">Login voor dat je een rapport aanmaakt</string>
+    <string name="failed_userinfo">Kan gebruikersinformatie niet ophalen</string>
+    <string name="password_not_match">Wachtwoorden komen niet overeen</string>
+</resources>
