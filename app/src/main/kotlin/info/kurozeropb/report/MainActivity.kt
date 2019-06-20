@@ -197,7 +197,6 @@ class MainActivity : AppCompatActivity() {
                         icon = R.drawable.translate
                         iconColor = getColor(R.color.darkblue)
                         callback = {
-                            // TODO : Open new menu with english and dutch options
                             val buttons = listOf(getString(R.string.lang_english), getString(R.string.lang_dutch))
                             selector(null, buttons) { _, i ->
                                 when (i) {
