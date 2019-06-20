@@ -31,4 +31,7 @@
     <string name="error_login">Login before creating a report</string>
     <string name="failed_userinfo">Failed to get user info</string>
     <string name="password_not_match">Passwords do not match</string>
+    <string name="language">Language</string>
+    <string name="lang_english">English</string>
+    <string name="lang_dutch">Dutch</string>
 </resources>

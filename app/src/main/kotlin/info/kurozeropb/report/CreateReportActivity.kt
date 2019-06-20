@@ -1,9 +1,11 @@
 package info.kurozeropb.report
 
+import android.content.Context
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
+import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import kotlinx.android.synthetic.main.activity_create_report.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
@@ -25,6 +27,10 @@ class CreateReportActivity : AppCompatActivity() {
         }
 
         btn_back.onClick { finish() }
+    }
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.updateBaseContextLocale(base))
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {

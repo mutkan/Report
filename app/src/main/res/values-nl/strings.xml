@@ -31,4 +31,7 @@
     <string name="error_login">Login voor dat je een rapport aanmaakt</string>
     <string name="failed_userinfo">Kan gebruikersinformatie niet ophalen</string>
     <string name="password_not_match">Wachtwoorden komen niet overeen</string>
+    <string name="language">Taal</string>
+    <string name="lang_english">Engels</string>
+    <string name="lang_dutch">Nederlands</string>
 </resources>

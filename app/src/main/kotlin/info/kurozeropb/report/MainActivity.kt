@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
+import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import info.kurozeropb.report.utils.Utils.SnackbarType
 import kotlinx.android.synthetic.main.activity_main.*
@@ -34,6 +35,8 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.jetbrains.anko.sdk27.coroutines.onClick
+import org.jetbrains.anko.selector
+
 
 @UnstableDefault
 @SuppressLint("InflateParams")
@@ -45,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        supportActionBar?.title = getString(R.string.app_name)
 
         val (version, versionCode) = Api.getVersions(this@MainActivity)
         Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
@@ -111,6 +116,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
+    }
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.updateBaseContextLocale(base))
     }
 
     override fun onStart() {
@@ -180,6 +189,29 @@ class MainActivity : AppCompatActivity() {
                         callback = {
                             val intent = Intent(this@MainActivity, AboutActivity::class.java)
                             startActivity(intent)
+                        }
+                    }
+                    item {
+                        label = getString(R.string.language)
+                        labelColor = getColor(R.color.darkblue)
+                        icon = R.drawable.translate
+                        iconColor = getColor(R.color.darkblue)
+                        callback = {
+                            // TODO : Open new menu with english and dutch options
+                            val buttons = listOf(getString(R.string.lang_english), getString(R.string.lang_dutch))
+                            selector(null, buttons) { _, i ->
+                                when (i) {
+                                    0 -> {
+                                        LocaleHelper.setLocale(this@MainActivity, "en")
+                                        recreate()
+                                    }
+                                    1 -> {
+                                        LocaleHelper.setLocale(this@MainActivity, "nl")
+                                        recreate()
+                                    }
+                                    else -> return@selector
+                                }
+                            }
                         }
                     }
                 }

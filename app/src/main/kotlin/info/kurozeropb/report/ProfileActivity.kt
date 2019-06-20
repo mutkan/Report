@@ -1,5 +1,6 @@
 package info.kurozeropb.report
 
+import android.content.Context
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import info.kurozeropb.report.utils.Api
+import info.kurozeropb.report.utils.LocaleHelper
 import kotlinx.serialization.UnstableDefault
 
 @UnstableDefault
@@ -37,6 +39,10 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         btn_profile_back.onClick { finish() }
+    }
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.updateBaseContextLocale(base))
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
