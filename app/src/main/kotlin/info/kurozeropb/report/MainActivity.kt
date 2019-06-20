@@ -154,9 +154,9 @@ class MainActivity : AppCompatActivity() {
             val popupMenu = popupMenu {
                 section {
                     item {
-                        label = if (Api.isLoggedin) getString(R.string.logout)  else getString(R.string.login)
+                        label = if (Api.isLoggedin) getString(R.string.logout) else getString(R.string.login)
                         labelColor = getColor(R.color.darkblue)
-                        icon = if (Api.isLoggedin) R.drawable.logout  else R.drawable.login
+                        icon = if (Api.isLoggedin) R.drawable.logout else R.drawable.login
                         iconColor = getColor(R.color.darkblue)
                         callback = { if (Api.isLoggedin) logout() else login() }
                     }

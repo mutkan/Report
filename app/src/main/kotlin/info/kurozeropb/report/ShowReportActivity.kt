@@ -27,8 +27,8 @@ class ShowReportActivity : AppCompatActivity() {
         val reportString = intent.getStringExtra("report")
         var report = Json.nonstrict.parse(Report.serializer(), reportString)
 
-        tv_show_note.text = getString(R.string.tv_show_note, "Loading...")
-        tv_show_tags.text = getString(R.string.tv_show_tags, "Loading...")
+        tv_show_note.text = getString(R.string.loading)
+        tv_show_tags.text = getString(R.string.loading)
 
         GlobalScope.launch(Dispatchers.IO) {
             val (rep, error) = Api.fetchReportByIdAsync(report.rid).await()
