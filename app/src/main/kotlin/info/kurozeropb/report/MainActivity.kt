@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -240,8 +241,13 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(getString(R.string.login)) { _, _ -> }.create()
         loginDialog.show()
 
+        val loginNegativeButton = loginDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+        loginNegativeButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40f)
+
         // Login dialog neutral button (REGISTER)
-        loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+        val loginNeutralButton = loginDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+        loginNeutralButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40f)
+        loginNeutralButton.setOnClickListener {
             val registerFactory = LayoutInflater.from(this@MainActivity)
             val registerView = registerFactory.inflate(R.layout.register_dialog, null)
             val registerDialog = AlertDialog.Builder(this@MainActivity)
@@ -250,8 +256,14 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton(getString(R.string.confirm)) { _, _ ->  }.create()
             registerDialog.show()
 
+            // Register negative button (CANCEL)
+            val registerNegativeButton = registerDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+            registerNegativeButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40f)
+
             // Register dialog positive button (CONFIRM)
-            registerDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
+            val registerPositiveButton = registerDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            registerPositiveButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40f)
+            registerPositiveButton.onClick {
                 val validEmail = registerView.emailInput.validator()
                     .validEmail()
                     .nonEmpty()
@@ -351,7 +363,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Login dialog positive button (LOGIN)
-        loginDialog.getButton(AlertDialog.BUTTON_POSITIVE).onClick {
+        val loginPositiveButton = loginDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        loginPositiveButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, 40f)
+        loginPositiveButton.onClick {
 
             val validUsername = loginView.usernameInput.validator()
                 .nonEmpty()

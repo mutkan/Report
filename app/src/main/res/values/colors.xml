@@ -5,7 +5,7 @@
     <color name="colorAccent">#ABC2E0</color>
     <color name="black">#000000</color>
     <color name="darkgray">#6D6C6C</color>
-    <color name="darkblue">#7E8894</color>
+    <color name="darkblue">#5f6770</color>
     <color name="sbBackground">#353535</color>
     <color name="sbInfo">@color/colorPrimaryDark</color> <!-- Just an alias for consistent naming -->
     <color name="sbAlert">#FFC107</color>
