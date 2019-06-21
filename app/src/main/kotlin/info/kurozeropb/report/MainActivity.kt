@@ -333,7 +333,8 @@ class MainActivity : AppCompatActivity() {
 
                 launch(Dispatchers.IO) {
                     val (_, _, result) = Fuel.post("/auth/register")
-                        .timeout(60000)
+                        .timeout(31000)
+                        .timeoutRead(60000)
                         .header(mapOf("Content-Type" to "application/json"))
                         .body(reqbody)
                         .responseJson()
@@ -393,7 +394,8 @@ class MainActivity : AppCompatActivity() {
             launch(Dispatchers.IO) {
                 val reqbody = "{\"username\": \"${loginView.usernameInput.text}\", \"password\": \"${loginView.passwordInput.text}\"}"
                 val (_, _, result) = Fuel.post("/auth/login")
-                    .timeout(60000)
+                    .timeout(31000)
+                    .timeoutRead(60000)
                     .header(mapOf("Content-Type" to "application/json"))
                     .body(reqbody)
                     .responseJson()
