@@ -37,7 +37,7 @@ object Api {
     fun fetchApiInfoAsync(): Deferred<Pair<ApiInfoData?, ErrorData?>> {
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/")
-                .timeout(31000)
+                .timeout(60000)
                 .header(mapOf("Content-Type" to "application/json"))
                 .responseJson()
 
@@ -77,7 +77,7 @@ object Api {
 
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/user/@me")
-                .timeout(31000)
+                .timeout(60000)
                 .header(mapOf("Content-Type" to "application/json"))
                 .header(mapOf("Authorization" to "Bearer $token"))
                 .responseJson()
@@ -122,7 +122,7 @@ object Api {
 
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/report/all")
-                .timeout(31000)
+                .timeout(60000)
                 .header(mapOf("Content-Type" to "application/json"))
                 .header(mapOf("Authorization" to "Bearer $token"))
                 .responseJson()
@@ -167,7 +167,7 @@ object Api {
 
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/report/$id")
-                .timeout(31000)
+                .timeout(60000)
                 .header(mapOf("Content-Type" to "application/json"))
                 .header(mapOf("Authorization" to "Bearer $token"))
                 .responseJson()
