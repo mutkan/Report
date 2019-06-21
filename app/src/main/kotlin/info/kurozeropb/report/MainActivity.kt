@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -14,7 +15,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.android.extension.responseJson
-import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.result.Result
 import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.android.material.snackbar.Snackbar
@@ -24,6 +24,7 @@ import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import info.kurozeropb.report.utils.Utils.SnackbarType
+import info.kurozeropb.report.utils.Utils.isJSON
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_scrolling.*
 import kotlinx.android.synthetic.main.login_dialog.*
@@ -49,29 +50,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        val reportString = intent.getStringExtra("reports")
+        if (reportString != null && isJSON(reportString)) {
+            val iReports = Json.nonstrict.parse(Report.serializer().list, reportString)
+            val iLoaded = loadReports(iReports)
+            if (iLoaded) {
+                swipeContainer.isRefreshing = false
+            }
+        }
+
         supportActionBar?.title = getString(R.string.app_name)
-
-        val (version, versionCode) = Api.getVersions(this@MainActivity)
-        Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
-
-        // Get saved preferences
-        Utils.sharedPreferences = getSharedPreferences("reportapp", Context.MODE_PRIVATE)
-        Api.token = Utils.sharedPreferences.getString("token", "")
-
-        // Parse saved userinfo
-        val jsonUser = Utils.sharedPreferences.getString("user", "") ?: ""
-        Api.user = if (jsonUser.isNotEmpty()) Json.nonstrict.parse(User.serializer(), jsonUser) else null
-
-        // Parse saved reports
-        val jsonReports = Utils.sharedPreferences.getString("reports", "") ?: ""
-        Api.reports = if (jsonReports.isNotEmpty()) Json.nonstrict.parse(Report.serializer().list, jsonReports) else null
-
-        // Set logged in
-        Api.isLoggedin = Api.token.isNullOrEmpty().not() && Api.user != null
-
-        // Set base variables for api requests
-        FuelManager.instance.basePath = Api.baseUrl
-        FuelManager.instance.baseHeaders = mapOf("User-Agent" to Api.userAgent)
 
         // Welcomes the user back if someone is logged in
         if (Api.isLoggedin) {
@@ -343,7 +331,7 @@ class MainActivity : AppCompatActivity() {
                         is Result.Failure -> {
                             if (error != null) {
                                 val json = String(error.response.data)
-                                if (Utils.isJSON(json)) {
+                                if (isJSON(json)) {
                                     val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
                                     Utils.showSnackbar(registerView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                 } else {
@@ -406,7 +394,7 @@ class MainActivity : AppCompatActivity() {
 
                         if (error != null) {
                             val json = String(error.response.data)
-                            if (Utils.isJSON(json)) {
+                            if (isJSON(json)) {
                                 val errorResponse = Json.nonstrict.parse(ErrorResponse.serializer(), json)
                                 Utils.showSnackbar(loginView, errorResponse.data.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                             } else {
