@@ -3,6 +3,7 @@ package info.kurozeropb.report
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.core.FuelManager
 import com.google.android.material.snackbar.Snackbar
@@ -11,19 +12,32 @@ import info.kurozeropb.report.structures.User
 import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
+import android.animation.AnimatorInflater
+import android.animation.AnimatorSet
+import kotlinx.android.synthetic.main.activity_splash.*
+import java.util.*
+import kotlin.concurrent.schedule
 
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
+        val splash = findViewById<ImageView>(R.id.splashImage)
+        val set = AnimatorInflater.loadAnimator(this, R.animator.flip) as AnimatorSet
+        set.setTarget(splash)
+        val timer = Timer().schedule(0, 1000) {
+            GlobalScope.launch(Dispatchers.Main) {
+                set.start()
+            }
+        }
 
         val (version, versionCode) = Api.getVersions(this)
         Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
@@ -53,20 +67,22 @@ class SplashScreenActivity : AppCompatActivity() {
                 when {
                     reports != null -> Api.reports = reports
                     reportsError != null -> {
-                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                        Utils.showSnackbar(splash_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
                         return@launch
                     }
                     else -> {
-                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                        Utils.showSnackbar(splash_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
                         return@launch
                     }
                 }
 
+                timer.cancel()
                 val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
                 intent.putExtra("reports", Json.nonstrict.stringify(Report.serializer().list, Api.reports!!))
                 startActivity(intent)
                 finish()
             } else {
+                timer.cancel()
                 val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
                 startActivity(intent)
                 finish()

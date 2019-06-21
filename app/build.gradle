@@ -6,7 +6,7 @@ apply plugin: 'kotlinx-serialization'
 ext {
     versionMajor = 0
     versionMinor = 2
-    buildNumber = 4
+    buildNumber = 5
 }
 
 android {
