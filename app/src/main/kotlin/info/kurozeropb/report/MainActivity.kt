@@ -81,32 +81,6 @@ class MainActivity : AppCompatActivity() {
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
     }
 
-    fun runSwiperContainer() {
-        GlobalScope.launch(Dispatchers.Main) {
-            if (Api.isLoggedin) {
-                val (reports, reportsError) = Api.fetchReportsAsync().await()
-                when {
-                    reports != null -> Api.reports = reports
-                    reportsError != null -> {
-                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
-                    }
-                    else -> {
-                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
-                    }
-                }
-
-                val loaded = loadReports(Api.reports)
-                if (loaded) {
-                    swipeContainer.isRefreshing = false
-                }
-            } else {
-                swipeContainer.isRefreshing = false
-            }
-        }
-    }
-
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(LocaleHelper.updateBaseContextLocale(base))
     }
@@ -209,6 +183,32 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return false
+    }
+
+    private fun runSwiperContainer() {
+        GlobalScope.launch(Dispatchers.Main) {
+            if (Api.isLoggedin) {
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
+                when {
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        return@launch
+                    }
+                    else -> {
+                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        return@launch
+                    }
+                }
+
+                val loaded = loadReports(Api.reports)
+                if (loaded) {
+                    swipeContainer.isRefreshing = false
+                }
+            } else {
+                swipeContainer.isRefreshing = false
+            }
+        }
     }
 
     /**
