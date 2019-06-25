@@ -18,11 +18,13 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-import android.animation.AnimatorInflater
-import android.animation.AnimatorSet
+import android.os.Handler
 import kotlinx.android.synthetic.main.activity_splash.*
-import java.util.*
-import kotlin.concurrent.schedule
+import android.view.animation.AnimationUtils.loadAnimation
+
+
+//import java.util.*
+//import kotlin.concurrent.schedule
 
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
@@ -31,13 +33,8 @@ class SplashScreenActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         val splash = findViewById<ImageView>(R.id.splashImage)
-        val set = AnimatorInflater.loadAnimator(this, R.animator.flip) as AnimatorSet
-        set.setTarget(splash)
-        val timer = Timer().schedule(0, 1000) {
-            GlobalScope.launch(Dispatchers.Main) {
-                set.start()
-            }
-        }
+        val anim = loadAnimation(this, R.anim.flip_horizontal)
+        splash.animation = anim
 
         val (version, versionCode) = Api.getVersions(this)
         Api.userAgent = "Report/v$version($versionCode) (https://github.com/reportapp/report)"
@@ -76,13 +73,15 @@ class SplashScreenActivity : AppCompatActivity() {
                     }
                 }
 
-                timer.cancel()
-                val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
-                intent.putExtra("reports", Json.nonstrict.stringify(Report.serializer().list, Api.reports!!))
-                startActivity(intent)
-                finish()
+//                timer.cancel()
+                Handler().postDelayed({
+                    val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
+                    intent.putExtra("reports", Json.nonstrict.stringify(Report.serializer().list, Api.reports!!))
+                    startActivity(intent)
+                    finish()
+                }, 10000)
             } else {
-                timer.cancel()
+//                timer.cancel()
                 val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
                 startActivity(intent)
                 finish()
