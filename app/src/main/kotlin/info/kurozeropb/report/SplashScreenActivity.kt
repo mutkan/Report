@@ -22,10 +22,6 @@ import kotlinx.serialization.list
 import kotlinx.android.synthetic.main.activity_splash.*
 import android.view.animation.AnimationUtils.loadAnimation
 
-
-//import java.util.*
-//import kotlin.concurrent.schedule
-
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
