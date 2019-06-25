@@ -38,7 +38,6 @@ import kotlinx.serialization.list
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.selector
 
-
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {
@@ -77,33 +76,35 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        swipeContainer.setOnRefreshListener {
-            GlobalScope.launch(Dispatchers.Main) {
-                if (Api.isLoggedin) {
-                    val (reports, reportsError) = Api.fetchReportsAsync().await()
-                    when {
-                        reports != null -> Api.reports = reports
-                        reportsError != null -> {
-                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                            return@launch
-                        }
-                        else -> {
-                            Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                            return@launch
-                        }
-                    }
-
-                    val loaded = loadReports(Api.reports)
-                    if (loaded) {
-                        swipeContainer.isRefreshing = false
-                    }
-                } else {
-                    swipeContainer.isRefreshing = false
-                }
-            }
-        }
+        swipeContainer.setOnRefreshListener { runSwiperContainer() }
 
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
+    }
+
+    fun runSwiperContainer() {
+        GlobalScope.launch(Dispatchers.Main) {
+            if (Api.isLoggedin) {
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
+                when {
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        return@launch
+                    }
+                    else -> {
+                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                        return@launch
+                    }
+                }
+
+                val loaded = loadReports(Api.reports)
+                if (loaded) {
+                    swipeContainer.isRefreshing = false
+                }
+            } else {
+                swipeContainer.isRefreshing = false
+            }
+        }
     }
 
     override fun attachBaseContext(base: Context) {
@@ -510,6 +511,38 @@ class MainActivity : AppCompatActivity() {
                     val intent = Intent(this, ShowReportActivity::class.java)
                     intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))
                     startActivity(intent)
+                }
+
+                cardView.setOnLongClickListener {
+                    val buttons = listOf("\uD83D\uDDD1 Delete")
+                    selector(null, buttons) { _, i ->
+                        when (i) {
+                            0 -> {
+                                GlobalScope.async {
+                                    val (message, error) = Api.deleteReportByIdAsync(report.rid).await()
+                                    when {
+                                        message != null -> {
+                                            // Force refresh to remove deleted report
+                                            swipeContainer.post(Runnable {
+                                                swipeContainer.isRefreshing = true
+                                                runSwiperContainer()
+                                            })
+                                            Utils.showSnackbar(main_view, message, Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
+                                            return@async
+                                        }
+                                        error != null -> {
+                                            Utils.showSnackbar(main_view, error.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                            return@async
+                                        }
+                                        else -> return@async
+                                    }
+                                }
+                            }
+                            else -> return@selector
+                        }
+                    }
+
+                    return@setOnLongClickListener true
                 }
             }
             return true
