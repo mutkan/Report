@@ -207,7 +207,7 @@ object Api {
         }
 
         return GlobalScope.async {
-            val (_, _, result) = Fuel.post("/report/delete/$id")
+            val (_, _, result) = Fuel.delete("/report/$id")
                 .timeout(31000)
                 .timeoutRead(60000)
                 .header(mapOf("Content-Type" to "application/json"))
