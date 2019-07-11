@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         if (Api.isLoggedin) {
             val userName = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
             Utils.showSnackbar(main_view, getString(R.string.welcome_back, userName), Snackbar.LENGTH_SHORT, SnackbarType.INFO)
+            tv_username_main.text = userName
         }
 
         fab.setOnClickListener { view ->

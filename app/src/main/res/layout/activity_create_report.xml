@@ -9,22 +9,22 @@
     android:id="@+id/create_report_view">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/create_report_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp"
-        android:theme="@style/ToolbarTheme"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+            android:id="@+id/create_report_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:elevation="4dp"
+            android:theme="@style/ToolbarTheme"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
         <Button
-            android:id="@+id/btn_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/report_back"
-            android:drawableStart="@drawable/arrow_left"
-            style="?android:attr/borderlessButtonStyle" />
+                android:id="@+id/btn_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/report_back"
+                android:drawableStart="@drawable/arrow_left"
+                style="?android:attr/borderlessButtonStyle" />
 
     </androidx.appcompat.widget.Toolbar>
 
