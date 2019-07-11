@@ -514,7 +514,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 cardView.setOnLongClickListener {
-                    val buttons = listOf("\uD83D\uDDD1 Delete")
+                    val buttons = listOf("Delete")
                     selector(null, buttons) { _, i ->
                         when (i) {
                             0 -> {
@@ -523,10 +523,10 @@ class MainActivity : AppCompatActivity() {
                                     when {
                                         message != null -> {
                                             // Force refresh to remove deleted report
-                                            swipeContainer.post(Runnable {
+                                            swipeContainer.post {
                                                 swipeContainer.isRefreshing = true
                                                 runSwiperContainer()
-                                            })
+                                            }
                                             Utils.showSnackbar(main_view, message, Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                             return@async
                                         }
