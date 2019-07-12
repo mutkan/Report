@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity() {
             val userName = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
             Utils.showSnackbar(main_view, getString(R.string.welcome_back, userName), Snackbar.LENGTH_SHORT, SnackbarType.INFO)
             tv_username_main.text = userName
+        } else {
+            tv_username_main.text = getString(R.string.not_loggedin)
         }
 
         fab.setOnClickListener { view ->
@@ -92,7 +94,9 @@ class MainActivity : AppCompatActivity() {
         // Load reports if user is still logged in
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin && pb_reports != null) {
-                pb_reports.visibility = View.VISIBLE
+                tv_username_main.text = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
+
+                    pb_reports.visibility = View.VISIBLE
                 val (reports, reportsError) = Api.fetchReportsAsync().await()
                 when {
                     reports != null -> Api.reports = reports
@@ -223,6 +227,7 @@ class MainActivity : AppCompatActivity() {
             Utils.sharedPreferences.edit().remove("user").apply()
             scrollLayout.removeAllViews()
             Api.isLoggedin = false
+            tv_username_main.text = getString(R.string.not_loggedin)
         }
     }
 
@@ -447,6 +452,7 @@ class MainActivity : AppCompatActivity() {
                                     withContext(Dispatchers.Main) {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
+                                        tv_username_main.text = user.username
                                     }
                                     Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }

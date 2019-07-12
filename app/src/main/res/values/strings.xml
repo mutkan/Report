@@ -36,4 +36,5 @@
     <string name="lang_dutch">Dutch</string>
     <string name="new_report_layout">Create new question template</string>
     <string name="logo">logo</string>
+    <string name="not_loggedin">Not logged in</string>
 </resources>
