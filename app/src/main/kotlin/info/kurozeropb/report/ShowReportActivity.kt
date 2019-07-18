@@ -27,7 +27,7 @@ class ShowReportActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
         val reportString = intent.getStringExtra("report")
-        var report = Json.nonstrict.parse(Report.serializer(), reportString)
+        var report = Json.nonstrict.parse(ResponseReport.serializer(), reportString)
 
         tv_show_note.text = getString(R.string.loading)
         tv_show_tags.text = getString(R.string.loading)

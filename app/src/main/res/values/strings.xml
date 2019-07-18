@@ -37,4 +37,13 @@
     <string name="new_report_layout">Create new question template</string>
     <string name="logo">logo</string>
     <string name="not_loggedin">Not logged in</string>
+    <string name="bad">Bad</string>
+    <string name="good">Good</string>
+    <string name="excellent">Excellent</string>
+    <string name="tags">Tags</string>
+    <string name="note">Note</string>
+    <string name="create">Create</string>
+    <string name="failed_create_report">Failed to create report</string>
+    <string name="tags_not_empty">Tags can not be empty</string>
+    <string name="notes_not_empty">Notes can not be empty</string>
 </resources>

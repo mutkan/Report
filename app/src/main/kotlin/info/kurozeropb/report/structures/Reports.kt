@@ -2,8 +2,14 @@ package info.kurozeropb.report.structures
 
 import kotlinx.serialization.Serializable
 
-@Serializable
 data class Report(
+        val tags: List<String>,
+        val feeling: Int,
+        val note: String
+)
+
+@Serializable
+data class ResponseReport(
         val rid: Int,
         val tags: List<String>,
         val feeling: Int,
@@ -14,7 +20,7 @@ data class Report(
 @Serializable
 data class ReportData(
         val message: String,
-        val report: Report
+        val report: ResponseReport
 )
 
 @Serializable
@@ -27,7 +33,7 @@ data class ReportResponse(
 @Serializable
 data class ReportsData(
         val message: String,
-        val reports: List<Report>
+        val reports: List<ResponseReport>
 )
 
 @Serializable

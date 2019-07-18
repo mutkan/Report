@@ -7,7 +7,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.core.FuelManager
 import com.google.android.material.snackbar.Snackbar
-import info.kurozeropb.report.structures.Report
+import info.kurozeropb.report.structures.ResponseReport
 import info.kurozeropb.report.structures.User
 import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.LocaleHelper
@@ -48,7 +48,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
         // Parse saved reports
         val jsonReports = Utils.sharedPreferences.getString("reports", "") ?: ""
-        Api.reports = if (jsonReports.isNotEmpty()) Json.nonstrict.parse(Report.serializer().list, jsonReports) else null
+        Api.reports = if (jsonReports.isNotEmpty()) Json.nonstrict.parse(ResponseReport.serializer().list, jsonReports) else null
 
         // Set base variables for api requests
         FuelManager.instance.basePath = Api.baseUrl
@@ -71,7 +71,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
                 // Handler().postDelayed({
                     val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
-                    intent.putExtra("reports", Json.nonstrict.stringify(Report.serializer().list, Api.reports!!))
+                    intent.putExtra("reports", Json.nonstrict.stringify(ResponseReport.serializer().list, Api.reports!!))
                     startActivity(intent)
                     finish()
                 // }, 10000)

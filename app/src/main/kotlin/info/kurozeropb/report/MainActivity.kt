@@ -32,6 +32,7 @@ import kotlinx.android.synthetic.main.login_dialog.view.*
 import kotlinx.android.synthetic.main.register_dialog.view.*
 import kotlinx.android.synthetic.main.report_card.view.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     private var mainMenu: Menu? = null
 
+    @ImplicitReflectionSerializer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         val reportString = intent.getStringExtra("reports")
         if (reportString != null && isJSON(reportString)) {
-            val iReports = Json.nonstrict.parse(Report.serializer().list, reportString)
+            val iReports = Json.nonstrict.parse(ResponseReport.serializer().list, reportString)
             val iLoaded = loadReports(iReports)
             if (iLoaded) {
                 swipeContainer.isRefreshing = false
@@ -476,12 +478,12 @@ class MainActivity : AppCompatActivity() {
      * Load fetched reports into the scroll-layout
      * @return [Boolean]
      */
-    private fun loadReports(reports: List<Report>?): Boolean {
+    private fun loadReports(reports: List<ResponseReport>?): Boolean {
         if (reports != null) {
             scrollLayout.removeAllViews()
 
             /** Sort newest report first */
-            val sorted = reports.sortedByDescending { it.rid }
+            val sorted = reports.sortedByDescending { it.createdAt }
 
             val display = windowManager.defaultDisplay
             val size = Point()
@@ -510,13 +512,13 @@ class MainActivity : AppCompatActivity() {
                 cardView.tv_created.text = getString(R.string.tv_created_text, Utils.formatISOString(report.createdAt))
                 cardView.ib_show.setOnClickListener {
                     val intent = Intent(this, ShowReportActivity::class.java)
-                    intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))
+                    intent.putExtra("report", Json.nonstrict.stringify(ResponseReport.serializer(), report))
                     startActivity(intent)
                 }
 
                 cardView.setOnClickListener {
                     val intent = Intent(this, ShowReportActivity::class.java)
-                    intent.putExtra("report", Json.nonstrict.stringify(Report.serializer(), report))
+                    intent.putExtra("report", Json.nonstrict.stringify(ResponseReport.serializer(), report))
                     startActivity(intent)
                 }
 
