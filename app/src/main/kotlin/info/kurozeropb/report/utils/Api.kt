@@ -248,12 +248,10 @@ object Api {
         val jsonBody = """
             {
                 "feeling": ${report.feeling},
-                "note": "${report.note}",
+                "note": ${Json.nonstrict.stringify(String.serializer(), report.note)},
                 "tags": ${Json.nonstrict.stringify(String.serializer().list, report.tags)}
             }
         """.trimIndent()
-
-        print(jsonBody)
 
         return GlobalScope.async {
             val (_, _, result) = Fuel.post("/report/create")
