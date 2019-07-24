@@ -102,6 +102,16 @@ class MainActivity : AppCompatActivity() {
                 .apply(RequestOptions.circleCropTransform())
                 .into(iv_avatar_main)
         }
+
+        iv_avatar_main.onClick {
+            val intent = Intent(this@MainActivity, ProfileActivity::class.java)
+            startActivity(intent)
+        }
+
+        tv_username_main.onClick {
+            val intent = Intent(this@MainActivity, ProfileActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun attachBaseContext(base: Context) {
