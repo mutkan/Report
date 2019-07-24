@@ -40,18 +40,15 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.selector
 import android.content.pm.PackageManager
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.os.Build
 import androidx.core.app.ActivityCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 
-
-
-
+const val READ_STORAGE_PERMISSION_REQUEST_CODE = 0x3
 
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {
-    val READ_STORAGE_PERMISSION_REQUEST_CODE = 0x3
-
     private var mainMenu: Menu? = null
 
     @ImplicitReflectionSerializer
@@ -97,6 +94,14 @@ class MainActivity : AppCompatActivity() {
         swipeContainer.setOnRefreshListener { runSwiperContainer() }
 
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,  android.R.color.holo_orange_light, android.R.color.holo_red_light)
+
+        if (Api.isLoggedin && Api.user != null) {
+            Glide.with(this)
+                .load(Api.user!!.avatarUrl)
+                .centerCrop()
+                .apply(RequestOptions.circleCropTransform())
+                .into(iv_avatar_main)
+        }
     }
 
     override fun attachBaseContext(base: Context) {
@@ -105,6 +110,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        if (Api.isLoggedin && Api.user != null) {
+            Glide.with(this)
+                .load(Api.user!!.avatarUrl)
+                .centerCrop()
+                .apply(RequestOptions.circleCropTransform())
+                .into(iv_avatar_main)
+        }
 
         // Load reports if user is still logged in
         GlobalScope.launch(Dispatchers.Main) {
@@ -243,6 +256,12 @@ class MainActivity : AppCompatActivity() {
             scrollLayout.removeAllViews()
             Api.isLoggedin = false
             tv_username_main.text = getString(R.string.not_loggedin)
+
+            Glide.with(this)
+                .load(R.drawable.profile)
+                .centerCrop()
+                .apply(RequestOptions.circleCropTransform())
+                .into(iv_avatar_main)
         }
     }
 
@@ -468,6 +487,12 @@ class MainActivity : AppCompatActivity() {
                                         loadReports(Api.reports)
                                         loginDialog.dismiss()
                                         tv_username_main.text = user.username
+
+                                        Glide.with(this@MainActivity)
+                                            .load(user.avatarUrl)
+                                            .centerCrop()
+                                            .apply(RequestOptions.circleCropTransform())
+                                            .into(iv_avatar_main)
                                     }
                                     Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
@@ -487,12 +512,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun checkPermissionForReadExtertalStorage(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val result = checkSelfPermission(READ_EXTERNAL_STORAGE)
-            return result == PackageManager.PERMISSION_GRANTED
-        }
-        return false
+    private fun checkPermissionForReadExtertalStorage(): Boolean {
+        val result = checkSelfPermission(READ_EXTERNAL_STORAGE)
+        return result == PackageManager.PERMISSION_GRANTED
     }
 
     @Throws(Exception::class)

@@ -13,6 +13,8 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import kotlinx.serialization.UnstableDefault
 import android.app.Activity
 import android.util.Log
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import java.io.File
 import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.structures.ImgUpload
@@ -20,6 +22,7 @@ import info.kurozeropb.report.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -49,6 +52,14 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
+        if (Api.isLoggedin && Api.user != null) {
+            Glide.with(this)
+                .load(Api.user!!.avatarUrl)
+                .centerCrop()
+                .apply(RequestOptions.circleCropTransform())
+                .into(iv_avatar)
+        }
+
         btn_profile_back.onClick { finish() }
 
         iv_avatar.onClick {
@@ -64,15 +75,9 @@ class ProfileActivity : AppCompatActivity() {
         try {
             if (resultCode == Activity.RESULT_OK) {
                 if (requestCode == REQUEST_GET_SINGLE_FILE) {
-                    // TODO: Save image externally and put external url in database
-
                     val selectedImageUri = intent!!.data
                     val imgPath = FilePickUtils.getSmartFilePath(this, selectedImageUri!!)
                     val file = File(imgPath)
-
-                    // Set the image in ImageView
-                    iv_avatar.setImageURI(selectedImageUri)
-                    createRoundImageView()
                     postImage(file)
                 }
             }
@@ -149,8 +154,46 @@ class ProfileActivity : AppCompatActivity() {
                 val response = client.newCall(request).execute()
                 val data = Json.nonstrict.parse(ImgUpload.serializer(), response.body?.string() ?: "{\"success\": false}")
                 if (data.success) {
-                    Utils.showSnackbar(profile_view, "Success uploading image", Snackbar.LENGTH_LONG, Utils.SnackbarType.SUCCESS)
-                    // TODO: Send url to api
+                    withContext(Dispatchers.Main) {
+                        if (Api.isLoggedin && Api.user != null) {
+                            Glide.with(this@ProfileActivity)
+                                .load(data.url)
+                                .centerCrop()
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(iv_avatar)
+                        }
+                    }
+
+                    // Send request to api to update avatar url
+                    if (data.url != null) {
+                        val (message, error) = Api.updateAvatarAsync(data.url).await()
+                        when {
+                            message != null -> {
+                                Utils.showSnackbar(profile_view, message, Snackbar.LENGTH_LONG, Utils.SnackbarType.SUCCESS)
+
+                                // Update user info
+                                val (user, userError) = Api.fetchUserInfoAsync().await()
+                                when {
+                                    user != null -> Api.user = user
+                                    userError != null -> {
+                                        Utils.showSnackbar(profile_view, userError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                        return@launch
+                                    }
+                                    else -> {
+                                        Utils.showSnackbar(profile_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                        return@launch
+                                    }
+                                }
+
+                                return@launch
+                            }
+                            error != null -> {
+                                Utils.showSnackbar(profile_view, error.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                return@launch
+                            }
+                            else -> return@launch
+                        }
+                    }
                 } else {
                     Utils.showSnackbar(profile_view, "Failed to upload image", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
                 }

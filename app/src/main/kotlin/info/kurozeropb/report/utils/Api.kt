@@ -285,4 +285,49 @@ object Api {
             }
         }
     }
+
+    fun updateAvatarAsync(url: String): Deferred<Pair<String?, ErrorData?>> {
+        if (!isLoggedin) {
+            return CompletableDeferred(Pair(null, null))
+        }
+
+        val jsonBody = """
+            {
+                "url": "$url"
+            }
+        """.trimIndent()
+
+        return GlobalScope.async {
+            val (_, _, result) = Fuel.post("/user/avatar")
+                .timeout(31000)
+                .timeoutRead(60000)
+                .header(mapOf("Content-Type" to "application/json"))
+                .header(mapOf("Authorization" to "Bearer $token"))
+                .body(jsonBody)
+                .responseJson()
+
+            val (data, error) = result
+            when (result) {
+                is Result.Failure -> {
+                    if (error != null) {
+                        val json = String(error.response.data)
+                        if (Utils.isJSON(json)) {
+                            val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
+                            return@async Pair(null, parsedError.data)
+                        } else {
+                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                        }
+                    }
+                    return@async Pair(null, ErrorData("Unkown Error"))
+                }
+                is Result.Success -> {
+                    if (data != null) {
+                        val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
+                        return@async Pair(response.data.message, null)
+                    }
+                    return@async Pair(null, ErrorData("No data returned by the api"))
+                }
+            }
+        }
+    }
 }
