@@ -131,13 +131,15 @@ class ProfileActivity : AppCompatActivity() {
             val requestBody = builder.build()
 
             // Set the headers
+            val (versionName, versionCode) = Api.getVersions(this@ProfileActivity)
             val headers = Headers.Builder()
                 .add("Authorization", Secrets.catgirlToken)
+                .add("User-Agent", "ReportApp/$versionName ($versionCode) - https://github.com/reportapp/Report")
                 .build()
 
             // Build the actual request
             val request = Request.Builder()
-                .url("https://catgirlsare.sexy/api/upload")
+                .url("https://catgirlsare.sexy/api/upload") // catgirlsare.sexy is a private file host
                 .headers(headers)
                 .post(requestBody)
                 .build()
