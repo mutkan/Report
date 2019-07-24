@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-// import android.os.Handler
+import android.os.Handler
 import kotlinx.android.synthetic.main.activity_splash.*
 import android.view.animation.AnimationUtils.loadAnimation
 
@@ -69,12 +69,12 @@ class SplashScreenActivity : AppCompatActivity() {
                     }
                 }
 
-                // Handler().postDelayed({
+                Handler().postDelayed({
                     val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
                     intent.putExtra("reports", Json.nonstrict.stringify(ResponseReport.serializer().list, Api.reports!!))
                     startActivity(intent)
                     finish()
-                // }, 10000)
+                }, 5000)
             } else {
                 val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
                 startActivity(intent)

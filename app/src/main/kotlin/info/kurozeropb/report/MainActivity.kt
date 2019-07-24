@@ -38,10 +38,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.selector
+import android.content.pm.PackageManager
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.os.Build
+import androidx.core.app.ActivityCompat
+
+
+
+
 
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {
+    val READ_STORAGE_PERMISSION_REQUEST_CODE = 0x3
 
     private var mainMenu: Menu? = null
 
@@ -50,6 +59,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        if (checkPermissionForReadExtertalStorage().not()) {
+            requestPermissionForReadExtertalStorage()
+        }
 
         val reportString = intent.getStringExtra("reports")
         if (reportString != null && isJSON(reportString)) {
@@ -472,6 +485,25 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    fun checkPermissionForReadExtertalStorage(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val result = checkSelfPermission(READ_EXTERNAL_STORAGE)
+            return result == PackageManager.PERMISSION_GRANTED
+        }
+        return false
+    }
+
+    @Throws(Exception::class)
+    fun requestPermissionForReadExtertalStorage() {
+        try {
+            ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE), READ_STORAGE_PERMISSION_REQUEST_CODE)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
+        }
+
     }
 
     /**

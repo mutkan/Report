@@ -6,24 +6,20 @@ import android.os.Bundle
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
-import info.kurozeropb.report.utils.Utils
 import kotlinx.android.synthetic.main.activity_profile.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
-import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.LocaleHelper
 import kotlinx.serialization.UnstableDefault
 import android.app.Activity
-import android.net.Uri
 import android.util.Log
 import java.io.File
-import android.provider.MediaStore
 import com.google.android.material.snackbar.Snackbar
-import info.kurozeropb.report.structures.ImgurData
-import info.kurozeropb.report.utils.Secrets
+import info.kurozeropb.report.structures.ImgUpload
+import info.kurozeropb.report.utils.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -70,62 +66,14 @@ class ProfileActivity : AppCompatActivity() {
                 if (requestCode == REQUEST_GET_SINGLE_FILE) {
                     // TODO: Save image externally and put external url in database
 
-                    var selectedImageUri = intent!!.data
-                    // Get the path from the Uri
-                    val path = getPathFromURI(selectedImageUri)
-                    if (path != null) {
-                        val f = File(path)
-                        selectedImageUri = Uri.fromFile(f)
-                    }
+                    val selectedImageUri = intent!!.data
+                    val imgPath = FilePickUtils.getSmartFilePath(this, selectedImageUri!!)
+                    val file = File(imgPath)
+
                     // Set the image in ImageView
                     iv_avatar.setImageURI(selectedImageUri)
                     createRoundImageView()
-
-                    GlobalScope.async {
-                        val file = File(path)
-                        val mediaType = "image/${file.extension}".toMediaTypeOrNull()
-                        val client = OkHttpClient()
-
-                        Log.i("EXTENSION", file.extension)
-
-                        // Create multipart body (multipart was a bitch to figure out how it worked)
-                        val builder = MultipartBody.Builder()
-                        builder.setType(MultipartBody.FORM)
-                        builder.addFormDataPart("key", Secrets.catgirlToken)
-                        builder.addFormDataPart("file", file.name, file.asRequestBody(mediaType))
-                        builder.setType("multipart/form-data".toMediaTypeOrNull()!!)
-                        val requestBody = builder.build()
-
-                        // Set the headers
-                        val headers = Headers.Builder()
-                            // .add("Authorization", "Client-ID ${Secrets.imgurClient}")
-                            .add("Authorization", Secrets.catgirlToken)
-                            .build()
-
-                        // Build the actual request
-                        val request = Request.Builder()
-                            // .url("https://api.imgur.com/3/image")
-                            .url("https://catgirlsare.sexy/api/upload")
-                            .headers(headers)
-                            .post(requestBody)
-                            .build()
-
-                        try {
-                            val response = client.newCall(request).execute()
-                            if (response.isSuccessful) {
-                                print(response.body!!.string())
-                                // val res = Json.nonstrict.parse(ImgurData.serializer(), response.body!!.string())
-                                // print(res)
-                                // Log.i("LINK", res.link)
-                            } else {
-                                print(response.message)
-                                Utils.showSnackbar(profile_view, "Failed to upload image", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                            }
-                            response.close()
-                        } catch (e: IOException) {
-                            Utils.showSnackbar(profile_view, e.message ?: "Something went wrong", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                        }
-                    }
+                    postImage(file)
                 }
             }
         } catch (e: Exception) {
@@ -161,27 +109,53 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    /** Get image path from uri */
-    private fun getPathFromURI(contentUri: Uri?): String? {
-        var res: String? = null
-        val proj = arrayOf(MediaStore.Images.Media.DATA)
-        if (contentUri != null) {
-            val cursor = contentResolver.query(contentUri, proj, null, null, null)
-            if (cursor!!.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-                res = cursor.getString(columnIndex)
-            }
-            cursor.close()
-            return res
-        }
-        return null
-    }
-
     /** Make iv_avatar round */
     private fun createRoundImageView() {
         val bitmap = iv_avatar.drawable.toBitmap()
         val circularBitmapDrawable = RoundedBitmapDrawableFactory.create(resources, bitmap)
         circularBitmapDrawable.isCircular = true
         iv_avatar.setImageDrawable(circularBitmapDrawable)
+    }
+
+    private fun postImage(file: File) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val mediaType = "image/${file.extension}".toMediaTypeOrNull()
+            val client = OkHttpClient()
+
+            // Create multipart body (multipart was a bitch to figure out how it worked)
+            val builder = MultipartBody.Builder()
+            builder.setType(MultipartBody.FORM)
+            builder.addFormDataPart("file", file.name, file.asRequestBody(mediaType))
+            builder.addFormDataPart("key", Secrets.catgirlToken)
+            builder.setType("multipart/form-data".toMediaTypeOrNull()!!)
+            val requestBody = builder.build()
+
+            // Set the headers
+            val headers = Headers.Builder()
+                .add("Authorization", Secrets.catgirlToken)
+                .build()
+
+            // Build the actual request
+            val request = Request.Builder()
+                .url("https://catgirlsare.sexy/api/upload")
+                .headers(headers)
+                .post(requestBody)
+                .build()
+
+            // Execute our request
+            try {
+                val response = client.newCall(request).execute()
+                val data = Json.nonstrict.parse(ImgUpload.serializer(), response.body?.string() ?: "{\"success\": false}")
+                if (data.success) {
+                    Utils.showSnackbar(profile_view, "Success uploading image", Snackbar.LENGTH_LONG, Utils.SnackbarType.SUCCESS)
+                    // TODO: Send url to api
+                } else {
+                    Utils.showSnackbar(profile_view, "Failed to upload image", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                }
+                response.close()
+            } catch (e: IOException) {
+                Utils.showSnackbar(profile_view, e.message ?: "Something went wrong", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+            }
+        }
     }
 }
