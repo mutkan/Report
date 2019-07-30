@@ -10,7 +10,7 @@ data class Report(
 
 @Serializable
 data class ResponseReport(
-        val rid: Int,
+        val rid: String,
         val tags: List<String>,
         val feeling: Int,
         val note: String,

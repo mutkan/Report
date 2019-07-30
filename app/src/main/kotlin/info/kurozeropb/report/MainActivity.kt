@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
+import info.kurozeropb.report.utils.Api.Response
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import info.kurozeropb.report.utils.Utils.SnackbarType
@@ -133,18 +134,16 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin && pb_reports != null) {
                 tv_username_main.text = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
-
-                    pb_reports.visibility = View.VISIBLE
-                val (reports, reportsError) = Api.fetchReportsAsync().await()
-                when {
-                    reports != null -> Api.reports = reports
-                    reportsError != null -> {
-                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
-                    }
-                    else -> {
-                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
+                pb_reports.visibility = View.VISIBLE
+                val reportsResponse = Api.fetchReportsAsync().await()
+                val (reports, reportsError) = reportsResponse
+                when (reportsResponse) {
+                    is Response.Success -> Api.reports = reports
+                    is Response.Failure -> {
+                        if (reportsError != null) {
+                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                            return@launch
+                        }
                     }
                 }
 
@@ -231,16 +230,15 @@ class MainActivity : AppCompatActivity() {
     private fun runSwiperContainer() {
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin) {
-                val (reports, reportsError) = Api.fetchReportsAsync().await()
-                when {
-                    reports != null -> Api.reports = reports
-                    reportsError != null -> {
-                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
-                    }
-                    else -> {
-                        Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
+                val reportsResponse = Api.fetchReportsAsync().await()
+                val (reports, reportsError) = reportsResponse
+                when (reportsResponse) {
+                    is Response.Success -> Api.reports = reports
+                    is Response.Failure -> {
+                        if (reportsError != null) {
+                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                            return@launch
+                        }
                     }
                 }
 
@@ -477,42 +475,42 @@ class MainActivity : AppCompatActivity() {
                             Utils.sharedPreferences.edit().putString("token", Api.token ?: "").apply()
                             Api.isLoggedin = true
 
-                            val (reports, reportsError) = Api.fetchReportsAsync().await()
-                            when {
-                                reports != null -> Api.reports = reports
-                                reportsError != null -> {
-                                    Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                                    return@launch
-                                }
-                                else -> {
-                                    Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                                    return@launch
+                            val reportsResponse = Api.fetchReportsAsync().await()
+                            val (reports, reportsError) = reportsResponse
+                            when (reportsResponse) {
+                                is Response.Success -> Api.reports = reports
+                                is Response.Failure -> {
+                                    if (reportsError != null) {
+                                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                        return@launch
+                                    }
                                 }
                             }
 
-                            val (user, userError) = Api.fetchUserInfoAsync().await()
-                            when {
-                                user != null -> {
-                                    withContext(Dispatchers.Main) {
-                                        loadReports(Api.reports)
-                                        loginDialog.dismiss()
-                                        tv_username_main.text = user.username
+                            val userResponse = Api.fetchUserInfoAsync().await()
+                            val (user, userError) = userResponse
+                            when (userResponse) {
+                                is Response.Success -> {
+                                    if (user != null) {
+                                        withContext(Dispatchers.Main) {
+                                            loadReports(Api.reports)
+                                            loginDialog.dismiss()
+                                            tv_username_main.text = user.username
 
-                                        Glide.with(this@MainActivity)
-                                            .load(user.avatarUrl)
-                                            .centerCrop()
-                                            .apply(RequestOptions.circleCropTransform())
-                                            .into(iv_avatar_main)
+                                            Glide.with(this@MainActivity)
+                                                .load(user.avatarUrl)
+                                                .centerCrop()
+                                                .apply(RequestOptions.circleCropTransform())
+                                                .into(iv_avatar_main)
+                                        }
+                                        Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                     }
-                                    Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
-                                userError != null -> {
-                                    Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                                    return@launch
-                                }
-                                else -> {
-                                    Utils.showSnackbar(main_view, getString(R.string.failed_userinfo), Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                                    return@launch
+                                is Response.Failure -> {
+                                    if (userError != null) {
+                                        Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                        return@launch
+                                    }
                                 }
                             }
                         }

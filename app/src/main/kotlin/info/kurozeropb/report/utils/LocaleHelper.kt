@@ -1,32 +1,33 @@
+@file:Suppress("DEPRECATION")
+
 package info.kurozeropb.report.utils
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Build
 import android.preference.PreferenceManager
 import java.util.Locale
 
 object LocaleHelper {
 
-    private val SELECTED_LANGUAGE = "Locale.Helper.Selected.Language"
+    private const val SELECTED_LANGUAGE = "Locale.Helper.Selected.Language"
 
-    fun onAttach(context: Context): Context {
-        val lang = getPersistedData(context, Locale.getDefault().language)
-        return setLocale(context, lang)
-    }
+//    fun onAttach(context: Context): Context {
+//        val lang = getPersistedData(context, Locale.getDefault().language)
+//        return setLocale(context, lang)
+//    }
+//
+//    fun onAttach(context: Context, defaultLanguage: String): Context {
+//        val lang = getPersistedData(context, defaultLanguage)
+//        return setLocale(context, lang)
+//    }
 
-    fun onAttach(context: Context, defaultLanguage: String): Context {
-        val lang = getPersistedData(context, defaultLanguage)
-        return setLocale(context, lang)
-    }
-
-    fun getLanguage(context: Context): String? {
+    private fun getLanguage(context: Context): String? {
         return getPersistedData(context, Locale.getDefault().language)
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     fun setLocale(context: Context, language: String?): Context {
         persist(context, language)
 
@@ -49,7 +50,6 @@ object LocaleHelper {
         editor.apply()
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
     private fun updateResources(context: Context, language: String?): Context {
         val locale = Locale(language)
         Locale.setDefault(locale)
@@ -74,8 +74,9 @@ object LocaleHelper {
         return context
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     fun updateBaseContextLocale(context: Context): Context {
-        val language = LocaleHelper.getLanguage(context)
+        val language = getLanguage(context)
         val locale = Locale(language)
         Locale.setDefault(locale)
 

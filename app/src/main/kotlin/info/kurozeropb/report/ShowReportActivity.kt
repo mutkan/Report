@@ -33,7 +33,8 @@ class ShowReportActivity : AppCompatActivity() {
         tv_show_tags.text = getString(R.string.loading)
 
         GlobalScope.launch(Dispatchers.IO) {
-            val (rep, error) = Api.fetchReportByIdAsync(report.rid).await()
+            val reportResponse = Api.fetchReportByIdAsync(report.rid).await()
+            val (rep, error) = reportResponse
             report = when {
                 rep != null -> rep
                 error != null -> {
