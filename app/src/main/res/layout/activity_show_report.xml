@@ -32,42 +32,64 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <TextView
-            android:id="@+id/tv_note_title"
-            android:text="@string/title_note"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/show_report_toolbar"
-            app:layout_constraintStart_toStartOf="@+id/tv_show_note" android:layout_marginTop="8dp"/>
-
-    <TextView
-            android:id="@+id/tv_show_note"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:text="@string/tv_show_note"
-            android:scrollbars="vertical"
+    <androidx.cardview.widget.CardView
+            android:id="@+id/cardReport"
+            android:layout_width="match_parent"
+            android:layout_height="550dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_note_title"/>
+            app:layout_constraintTop_toBottomOf="@+id/show_report_toolbar">
 
-    <TextView
-            android:id="@+id/tv_tags_title"
-            android:text="@string/title_tags"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/tv_show_note"
-            app:layout_constraintStart_toStartOf="@+id/tv_show_tags"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cardLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    <TextView
-            android:id="@+id/tv_show_tags"
-            android:text="@string/tv_show_tags"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_tags_title"/>
+            <TextView
+                    android:id="@+id/tv_note_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/title_note"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tv_show_note"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                    android:id="@+id/tv_show_note"
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="vertical"
+                    android:text="@string/tv_show_note"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_note_title" />
+
+            <TextView
+                    android:id="@+id/tv_tags_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/title_tags"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/tv_show_tags"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_show_note" />
+
+            <TextView
+                    android:id="@+id/tv_show_tags"
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tv_show_tags"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_tags_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
