@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import java.io.File
 import com.google.android.material.snackbar.Snackbar
-import info.kurozeropb.report.utils.Api.Response
 import info.kurozeropb.report.structures.ImgUpload
 import info.kurozeropb.report.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -173,15 +172,12 @@ class ProfileActivity : AppCompatActivity() {
                                 Utils.showSnackbar(profile_view, message, Snackbar.LENGTH_LONG, Utils.SnackbarType.SUCCESS)
 
                                 // Update user info
-                                val userResponse = Api.fetchUserInfoAsync().await()
-                                val (user, userError) = userResponse
-                                when (userResponse) {
-                                    is Response.Success -> Api.user = user
-                                    is Response.Failure -> {
-                                        if (userError != null) {
-                                            Utils.showSnackbar(profile_view, userError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                                            return@launch
-                                        }
+                                val (user, userError) = Api.fetchUserInfoAsync().await()
+                                when {
+                                    user != null -> Api.user = user
+                                    userError != null -> {
+                                        Utils.showSnackbar(profile_view, userError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                        return@launch
                                     }
                                 }
 
@@ -191,7 +187,6 @@ class ProfileActivity : AppCompatActivity() {
                                 Utils.showSnackbar(profile_view, error.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
                                 return@launch
                             }
-                            else -> return@launch
                         }
                     }
                 } else {

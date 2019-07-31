@@ -21,7 +21,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import info.kurozeropb.report.structures.*
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.Api.Response
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import info.kurozeropb.report.utils.Utils.SnackbarType
@@ -47,6 +46,7 @@ import com.bumptech.glide.request.RequestOptions
 
 const val READ_STORAGE_PERMISSION_REQUEST_CODE = 0x3
 
+@Suppress("UNCHECKED_CAST")
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {
@@ -135,15 +135,12 @@ class MainActivity : AppCompatActivity() {
             if (Api.isLoggedin && pb_reports != null) {
                 tv_username_main.text = if (Api.user != null) Api.user?.username ?: "<${getString(R.string.username)}>" else "<${getString(R.string.username)}>"
                 pb_reports.visibility = View.VISIBLE
-                val reportsResponse = Api.fetchReportsAsync().await()
-                val (reports, reportsError) = reportsResponse
-                when (reportsResponse) {
-                    is Response.Success -> Api.reports = reports
-                    is Response.Failure -> {
-                        if (reportsError != null) {
-                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                            return@launch
-                        }
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
+                when {
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                        return@launch
                     }
                 }
 
@@ -230,15 +227,12 @@ class MainActivity : AppCompatActivity() {
     private fun runSwiperContainer() {
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin) {
-                val reportsResponse = Api.fetchReportsAsync().await()
-                val (reports, reportsError) = reportsResponse
-                when (reportsResponse) {
-                    is Response.Success -> Api.reports = reports
-                    is Response.Failure -> {
-                        if (reportsError != null) {
-                            Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                            return@launch
-                        }
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
+                when {
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                        return@launch
                     }
                 }
 
@@ -475,42 +469,34 @@ class MainActivity : AppCompatActivity() {
                             Utils.sharedPreferences.edit().putString("token", Api.token ?: "").apply()
                             Api.isLoggedin = true
 
-                            val reportsResponse = Api.fetchReportsAsync().await()
-                            val (reports, reportsError) = reportsResponse
-                            when (reportsResponse) {
-                                is Response.Success -> Api.reports = reports
-                                is Response.Failure -> {
-                                    if (reportsError != null) {
-                                        Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                                        return@launch
-                                    }
+                            val (reports, reportsError) = Api.fetchReportsAsync().await()
+                            when {
+                                reports != null -> Api.reports = reports
+                                reportsError != null -> {
+                                    Utils.showSnackbar(main_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                                    return@launch
                                 }
                             }
 
-                            val userResponse = Api.fetchUserInfoAsync().await()
-                            val (user, userError) = userResponse
-                            when (userResponse) {
-                                is Response.Success -> {
-                                    if (user != null) {
-                                        withContext(Dispatchers.Main) {
-                                            loadReports(Api.reports)
-                                            loginDialog.dismiss()
-                                            tv_username_main.text = user.username
+                            val (user, userError) = Api.fetchUserInfoAsync().await()
+                            when {
+                                user != null -> {
+                                    withContext(Dispatchers.Main) {
+                                        loadReports(Api.reports)
+                                        loginDialog.dismiss()
+                                        tv_username_main.text = user.username
 
-                                            Glide.with(this@MainActivity)
-                                                .load(user.avatarUrl)
-                                                .centerCrop()
-                                                .apply(RequestOptions.circleCropTransform())
-                                                .into(iv_avatar_main)
-                                        }
-                                        Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
+                                        Glide.with(this@MainActivity)
+                                            .load(user.avatarUrl)
+                                            .centerCrop()
+                                            .apply(RequestOptions.circleCropTransform())
+                                            .into(iv_avatar_main)
                                     }
+                                    Utils.showSnackbar(main_view, getString(R.string.login_welcome, user.username), Snackbar.LENGTH_LONG, SnackbarType.SUCCESS)
                                 }
-                                is Response.Failure -> {
-                                    if (userError != null) {
-                                        Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                                        return@launch
-                                    }
+                                userError != null -> {
+                                    Utils.showSnackbar(main_view, userError.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                                    return@launch
                                 }
                             }
                         }
@@ -605,7 +591,6 @@ class MainActivity : AppCompatActivity() {
                                             Utils.showSnackbar(main_view, error.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
                                             return@async
                                         }
-                                        else -> return@async
                                     }
                                 }
                             }

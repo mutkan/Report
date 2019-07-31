@@ -8,8 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
+import info.kurozeropb.report.structures.ApiInfoData
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.Api.Response
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import info.kurozeropb.report.utils.Utils.SnackbarType
@@ -45,27 +45,22 @@ class AboutActivity : AppCompatActivity() {
         val year = Calendar.getInstance().get(Calendar.YEAR)
 
         GlobalScope.launch(Dispatchers.IO) {
-            val response = Api.fetchApiInfoAsync().await()
-            val (info, error) = response
-            when (response) {
-                is Response.Success -> {
-                    if (info != null) {
-                        withContext(Dispatchers.Main) {
-                            tv_about.text = HtmlCompat.fromHtml("""
+            val (info, error) = Api.fetchApiInfoAsync().await()
+            when {
+                info != null -> {
+                    withContext(Dispatchers.Main) {
+                        tv_about.text = HtmlCompat.fromHtml("""
                             <p>© $year — <a href="https://kurozeropb.info">Kurozero</a> | Build <b>v$version($versionCode)</b>
                             <br/>
-                            Api version <b>v${info.version}</b>, env <b>${info.env}</b></p>
+                            Api version <b>v${(info as ApiInfoData).version}</b>, env <b>${info.env}</b></p>
                         """.trimIndent(), HtmlCompat.FROM_HTML_MODE_LEGACY)
-                            tv_about.movementMethod = LinkMovementMethod.getInstance()
-                        }
+                        tv_about.movementMethod = LinkMovementMethod.getInstance()
                     }
                 }
-                is Response.Failure -> {
-                    if (error != null) {
-                        tv_about.text = getString(R.string.tv_show_about, error.message)
-                        Utils.showSnackbar(about_view, error.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
-                        return@launch
-                    }
+                error != null -> {
+                    tv_about.text = getString(R.string.tv_show_about, error.message)
+                    Utils.showSnackbar(about_view, error.message, Snackbar.LENGTH_LONG, SnackbarType.EXCEPTION)
+                    return@launch
                 }
             }
         }

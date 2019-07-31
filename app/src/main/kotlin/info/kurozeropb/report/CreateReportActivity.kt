@@ -70,10 +70,6 @@ class CreateReportActivity : AppCompatActivity() {
                     Utils.showSnackbar(create_report_view, err.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
                     return@onClick
                 }
-                else -> {
-                    Utils.showSnackbar(create_report_view, getString(R.string.failed_create_report), Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                    return@onClick
-                }
             }
         }
     }

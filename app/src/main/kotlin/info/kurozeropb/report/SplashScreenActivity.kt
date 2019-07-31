@@ -10,7 +10,6 @@ import com.google.android.material.snackbar.Snackbar
 import info.kurozeropb.report.structures.ResponseReport
 import info.kurozeropb.report.structures.User
 import info.kurozeropb.report.utils.Api
-import info.kurozeropb.report.utils.Api.Response
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +22,7 @@ import android.os.Handler
 import kotlinx.android.synthetic.main.activity_splash.*
 import android.view.animation.AnimationUtils.loadAnimation
 
+@Suppress("UNCHECKED_CAST")
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,15 +57,12 @@ class SplashScreenActivity : AppCompatActivity() {
 
         GlobalScope.launch(Dispatchers.Main) {
             if (Api.isLoggedin) {
-                val reportsResponse = Api.fetchReportsAsync().await()
-                val (reports, reportsError) = reportsResponse
-                when (reportsResponse) {
-                    is Response.Success -> Api.reports = reports
-                    is Response.Failure -> {
-                        if (reportsError != null) {
-                            Utils.showSnackbar(splash_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
-                            return@launch
-                        }
+                val (reports, reportsError) = Api.fetchReportsAsync().await()
+                when {
+                    reports != null -> Api.reports = reports
+                    reportsError != null -> {
+                        Utils.showSnackbar(splash_view, reportsError.message, Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
+                        return@launch
                     }
                 }
 
