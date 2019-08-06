@@ -23,6 +23,8 @@ object Api {
     var reports: List<ResponseReport>? = null
     var isLoggedin: Boolean = false
 
+    data class Response<out V : Any?, out E : ErrorData?>(val Value: V, val Exception: E)
+
     fun getVersions(ctx: Context): Pair<String, String> {
         val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -33,7 +35,7 @@ object Api {
         }
     }
 
-    fun fetchApiInfoAsync(): Deferred<Pair<ApiInfoData?, ErrorData?>> {
+    fun fetchApiInfoAsync(): Deferred<Response<ApiInfoData?, ErrorData?>> {
         return GlobalScope.async {
             val (_, _, result) = Fuel.get("/")
                 .timeout(31000)
@@ -48,19 +50,19 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(ApiInfoResponse.serializer(), data.content)
-                        return@async Pair(response.data, null)
+                        return@async Response(response.data, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
@@ -68,11 +70,11 @@ object Api {
 
     /**
      * Request info about the currently logged in user
-     * @return [Deferred] Pair with User or ErrorResponse, await in coroutine scope
+     * @return [Deferred] Response with User or ErrorResponse, await in coroutine scope
      */
-    fun fetchUserInfoAsync(): Deferred<Pair<User?, ErrorData?>> {
+    fun fetchUserInfoAsync(): Deferred<Response<User?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         return GlobalScope.async {
@@ -90,12 +92,12 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
@@ -104,9 +106,9 @@ object Api {
 
                         val ustr = Json.nonstrict.stringify(User.serializer(), response.data.user)
                         Utils.sharedPreferences.edit().putString("user", ustr).apply()
-                        return@async Pair(user, null)
+                        return@async Response(user, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
@@ -114,11 +116,11 @@ object Api {
 
     /**
      * Request all reports from the api for the currently logged in user
-     * @return [Deferred] Pair with List<Report> or ErrorResponse, await in coroutine scope
+     * @return [Deferred] Response with List<Report> or ErrorResponse, await in coroutine scope
      */
-    fun fetchReportsAsync(): Deferred<Pair<List<ResponseReport>?, ErrorData?>> {
+    fun fetchReportsAsync(): Deferred<Response<List<ResponseReport>?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         return GlobalScope.async {
@@ -136,12 +138,12 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
@@ -150,9 +152,9 @@ object Api {
 
                         val rstr = Json.nonstrict.stringify(ResponseReport.serializer().list, response.data.reports)
                         Utils.sharedPreferences.edit().putString("reports", rstr).apply()
-                        return@async Pair(reports, null)
+                        return@async Response(reports, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
@@ -160,11 +162,11 @@ object Api {
 
     /**
      * Fetch a single report
-     * @return [Deferred] Pair with Report or ErrorResponse
+     * @return [Deferred] Response with Report or ErrorResponse
      */
-    fun fetchReportByIdAsync(id: String): Deferred<Pair<ResponseReport?, ErrorData?>> {
+    fun fetchReportByIdAsync(id: String): Deferred<Response<ResponseReport?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         return GlobalScope.async {
@@ -182,27 +184,27 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(ReportResponse.serializer(), data.content)
-                        return@async Pair(response.data.report, null)
+                        return@async Response(response.data.report, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
     }
 
-    fun deleteReportByIdAsync(id: String): Deferred<Pair<String?, ErrorData?>> {
+    fun deleteReportByIdAsync(id: String): Deferred<Response<String?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         return GlobalScope.async {
@@ -220,28 +222,28 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
-                        return@async Pair(response.data.message, null)
+                        return@async Response(response.data.message, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
     }
 
     @ImplicitReflectionSerializer
-    fun createReportAsync(report: Report): Deferred<Pair<String?, ErrorData?>> {
+    fun createReportAsync(report: Report): Deferred<Response<String?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         val jsonBody = """
@@ -268,27 +270,27 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
-                        return@async Pair(response.data.message, null)
+                        return@async Response(response.data.message, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
     }
 
-    fun updateAvatarAsync(url: String): Deferred<Pair<String?, ErrorData?>> {
+    fun updateAvatarAsync(url: String): Deferred<Response<String?, ErrorData?>> {
         if (!isLoggedin) {
-            return CompletableDeferred(Pair(null, null))
+            return CompletableDeferred(Response(null, ErrorData("Not logged in")))
         }
 
         val jsonBody = """
@@ -313,19 +315,19 @@ object Api {
                         val json = String(error.response.data)
                         if (Utils.isJSON(json)) {
                             val parsedError = Json.nonstrict.parse(ErrorResponse.serializer(), json)
-                            return@async Pair(null, parsedError.data)
+                            return@async Response(null, parsedError.data)
                         } else {
-                            return@async Pair(null, ErrorData(error.exception.message ?: "Unkown Error"))
+                            return@async Response(null, ErrorData(error.exception.message ?: "Unkown Error"))
                         }
                     }
-                    return@async Pair(null, ErrorData("Unkown Error"))
+                    return@async Response(null, ErrorData("Unkown Error"))
                 }
                 is Result.Success -> {
                     if (data != null) {
                         val response = Json.nonstrict.parse(BasicResponse.serializer(), data.content)
-                        return@async Pair(response.data.message, null)
+                        return@async Response(response.data.message, null)
                     }
-                    return@async Pair(null, ErrorData("No data returned by the api"))
+                    return@async Response(null, ErrorData("No data returned by the api"))
                 }
             }
         }
