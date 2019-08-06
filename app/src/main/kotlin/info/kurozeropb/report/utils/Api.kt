@@ -23,7 +23,7 @@ object Api {
     var reports: List<ResponseReport>? = null
     var isLoggedin: Boolean = false
 
-    data class Response<out V : Any?, out E : ErrorData?>(val Value: V, val Exception: E)
+    data class Response<out V : Any?, out E : ErrorData?>(val value: V, val exception: E)
 
     fun getVersions(ctx: Context): Pair<String, String> {
         val packageInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
