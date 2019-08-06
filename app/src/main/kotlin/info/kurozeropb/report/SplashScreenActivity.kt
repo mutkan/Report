@@ -22,7 +22,6 @@ import android.os.Handler
 import kotlinx.android.synthetic.main.activity_splash.*
 import android.view.animation.AnimationUtils.loadAnimation
 
-@Suppress("UNCHECKED_CAST")
 @UnstableDefault
 class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

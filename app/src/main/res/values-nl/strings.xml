@@ -46,4 +46,6 @@
     <string name="failed_create_report">Kan rapport niet aanmaken</string>
     <string name="tags_not_empty">Tags kan niet leeg zijn</string>
     <string name="notes_not_empty">Notities kan niet leeg zijn</string>
+    <string name="picture_select">Kies Foto</string>
+    <string name="not_save_image">Kan afbeelding niet opslaan</string>
 </resources>

@@ -46,7 +46,6 @@ import com.bumptech.glide.request.RequestOptions
 
 const val READ_STORAGE_PERMISSION_REQUEST_CODE = 0x3
 
-@Suppress("UNCHECKED_CAST")
 @UnstableDefault
 @SuppressLint("InflateParams")
 class MainActivity : AppCompatActivity() {

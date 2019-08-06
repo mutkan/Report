@@ -46,4 +46,6 @@
     <string name="failed_create_report">Failed to create report</string>
     <string name="tags_not_empty">Tags can not be empty</string>
     <string name="notes_not_empty">Notes can not be empty</string>
+    <string name="picture_select">Select Picture</string>
+    <string name="not_save_image">Could not save image</string>
 </resources>

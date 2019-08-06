@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.github.pwittchen.swipe.library.rx2.SwipeEvent
 import com.google.android.material.snackbar.Snackbar
-import info.kurozeropb.report.structures.ApiInfoData
 import info.kurozeropb.report.utils.Api
 import info.kurozeropb.report.utils.LocaleHelper
 import info.kurozeropb.report.utils.Utils
@@ -52,7 +51,7 @@ class AboutActivity : AppCompatActivity() {
                         tv_about.text = HtmlCompat.fromHtml("""
                             <p>© $year — <a href="https://kurozeropb.info">Kurozero</a> | Build <b>v$version($versionCode)</b>
                             <br/>
-                            Api version <b>v${(info as ApiInfoData).version}</b>, env <b>${info.env}</b></p>
+                            Api version <b>v${info.version}</b>, env <b>${info.env}</b></p>
                         """.trimIndent(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                         tv_about.movementMethod = LinkMovementMethod.getInstance()
                     }

@@ -12,7 +12,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import kotlinx.serialization.UnstableDefault
 import android.app.Activity
-import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import java.io.File
@@ -66,7 +65,7 @@ class ProfileActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "image/*"
-            startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_GET_SINGLE_FILE)
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.picture_select)), REQUEST_GET_SINGLE_FILE)
         }
     }
 
@@ -80,9 +79,11 @@ class ProfileActivity : AppCompatActivity() {
                     val file = File(imgPath)
                     postImage(file)
                 }
+            } else {
+                Utils.showSnackbar(profile_view, getString(R.string.not_save_image), Snackbar.LENGTH_SHORT, Utils.SnackbarType.ALERT)
             }
         } catch (e: Exception) {
-            Log.e("FileSelectorActivity", "File select error", e)
+            Utils.showSnackbar(profile_view, e.message ?: "Unkown Error", Snackbar.LENGTH_LONG, Utils.SnackbarType.EXCEPTION)
         }
 
     }
